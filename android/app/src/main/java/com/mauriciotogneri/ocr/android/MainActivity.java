@@ -2,6 +2,7 @@ package com.mauriciotogneri.ocr.android;
 
 import android.Manifest;
 import android.Manifest.permission;
+import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -74,10 +75,20 @@ public class MainActivity extends AppCompatActivity implements Analyzer
     }
 
     @Override
-    public void analyze(@NonNull ImageProxy image)
+    @SuppressLint("UnsafeExperimentalUsageError")
+    public void analyze(@NonNull ImageProxy imageProxy)
     {
-        Log.d("IMAGE", image.getWidth() + "x" + image.getHeight());
-        image.close();
+        //ByteBuffer buffer = imageProxy.getPlanes()[0].getBuffer();
+        //byte[] data = buffer.array();
+
+        Log.d("IMAGE_ANALYZE", imageProxy.getWidth() + "x" + imageProxy.getHeight() + " - " + imageProxy.getPlanes().length);
+
+        /*for (int i = 0; i < data.length; i++)
+        {
+            int pixel = data[i] & 0xff;
+        }*/
+
+        imageProxy.close();
     }
 
     @Override
