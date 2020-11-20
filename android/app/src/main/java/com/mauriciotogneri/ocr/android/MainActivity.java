@@ -7,8 +7,12 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.os.Bundle;
@@ -97,7 +101,7 @@ public class MainActivity extends AppCompatActivity implements Analyzer
     public void analyze(@NonNull ImageProxy imageProxy)
     {
         Bitmap bitmap = bitmap(imageProxy);
-        //saveFile(imageProxy, bitmap);
+        saveFile(imageProxy, bitmap);
 
         imageProxy.close();
     }
@@ -124,10 +128,30 @@ public class MainActivity extends AppCompatActivity implements Analyzer
 
         byte[] imageBytes = out.toByteArray();
         Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+
         Matrix matrix = new Matrix();
         matrix.postRotate(imageProxy.getImageInfo().getRotationDegrees());
+        Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+        Bitmap grayScaleBitmap = toGrayscale(rotatedBitmap);
 
-        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+        bitmap.recycle();
+        rotatedBitmap.recycle();
+
+        return grayScaleBitmap;
+    }
+
+    private Bitmap toGrayscale(Bitmap bitmap)
+    {
+        Bitmap result = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(result);
+        Paint paint = new Paint();
+        ColorMatrix colorMatrix = new ColorMatrix();
+        colorMatrix.setSaturation(0f);
+        ColorMatrixColorFilter colorMatrixColorFilter = new ColorMatrixColorFilter(colorMatrix);
+        paint.setColorFilter(colorMatrixColorFilter);
+        canvas.drawBitmap(bitmap, 0, 0, paint);
+
+        return result;
     }
 
     private void saveFile(ImageProxy imageProxy, Bitmap bitmap)
