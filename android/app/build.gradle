@@ -35,7 +35,6 @@ ext
 dependencies
 {
     implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'com.google.android.material:material:1.2.1'
 
     implementation "androidx.camera:camera-camera2:$camerax"
     implementation "androidx.camera:camera-lifecycle:$camerax"
