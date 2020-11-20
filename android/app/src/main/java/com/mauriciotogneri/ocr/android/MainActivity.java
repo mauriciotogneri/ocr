@@ -101,7 +101,7 @@ public class MainActivity extends AppCompatActivity implements Analyzer
     public void analyze(@NonNull ImageProxy imageProxy)
     {
         Bitmap bitmap = bitmap(imageProxy);
-        saveFile(imageProxy, bitmap);
+        //saveFile(imageProxy, bitmap);
 
         imageProxy.close();
     }
@@ -132,26 +132,20 @@ public class MainActivity extends AppCompatActivity implements Analyzer
         Matrix matrix = new Matrix();
         matrix.postRotate(imageProxy.getImageInfo().getRotationDegrees());
         Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-        Bitmap grayScaleBitmap = toGrayscale(rotatedBitmap);
 
-        bitmap.recycle();
-        rotatedBitmap.recycle();
-
-        return grayScaleBitmap;
-    }
-
-    private Bitmap toGrayscale(Bitmap bitmap)
-    {
-        Bitmap result = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(result);
+        Bitmap grayScaleBitmap = Bitmap.createBitmap(rotatedBitmap.getWidth(), rotatedBitmap.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(grayScaleBitmap);
         Paint paint = new Paint();
         ColorMatrix colorMatrix = new ColorMatrix();
         colorMatrix.setSaturation(0f);
         ColorMatrixColorFilter colorMatrixColorFilter = new ColorMatrixColorFilter(colorMatrix);
         paint.setColorFilter(colorMatrixColorFilter);
-        canvas.drawBitmap(bitmap, 0, 0, paint);
+        canvas.drawBitmap(rotatedBitmap, 0, 0, paint);
 
-        return result;
+        bitmap.recycle();
+        rotatedBitmap.recycle();
+
+        return grayScaleBitmap;
     }
 
     private void saveFile(ImageProxy imageProxy, Bitmap bitmap)
