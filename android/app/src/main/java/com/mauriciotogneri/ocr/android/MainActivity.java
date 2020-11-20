@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
+import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.os.Bundle;
@@ -119,8 +120,11 @@ public class MainActivity extends AppCompatActivity implements Analyzer
         yuvImage.compressToJpeg(new Rect(0, 0, yuvImage.getWidth(), yuvImage.getHeight()), 75, out);
 
         byte[] imageBytes = out.toByteArray();
+        Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+        Matrix matrix = new Matrix();
+        matrix.postRotate(imageProxy.getImageInfo().getRotationDegrees());
 
-        return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
     }
 
     private void saveFile(ImageProxy imageProxy, Bitmap bitmap)
