@@ -4,6 +4,7 @@ import android.Manifest;
 import android.Manifest.permission;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -13,13 +14,16 @@ import java.util.concurrent.Executors;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ImageAnalysis;
+import androidx.camera.core.ImageAnalysis.Analyzer;
+import androidx.camera.core.ImageProxy;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-public class MainActivity extends AppCompatActivity
+public class MainActivity extends AppCompatActivity implements Analyzer
 {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
@@ -39,8 +43,6 @@ public class MainActivity extends AppCompatActivity
         {
             ActivityCompat.requestPermissions(this, new String[] {permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
         }
-
-        findViewById(R.id.button_capture).setOnClickListener(view -> takePhoto());
     }
 
     private void startCamera()
@@ -49,12 +51,20 @@ public class MainActivity extends AppCompatActivity
         cameraProviderFuture.addListener(() -> {
             try
             {
-                PreviewView previewView = findViewById(R.id.preview);
                 ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
+
                 Preview preview = new Preview.Builder().build();
+                PreviewView previewView = findViewById(R.id.preview);
                 preview.setSurfaceProvider(previewView.getSurfaceProvider());
+
+                ImageAnalysis imageAnalyzer = new ImageAnalysis.Builder().build();
+                imageAnalyzer.setAnalyzer(executor, this);
+
                 cameraProvider.unbindAll();
-                cameraProvider.bindToLifecycle(this, CameraSelector.DEFAULT_BACK_CAMERA, preview);
+                cameraProvider.bindToLifecycle(this,
+                                               CameraSelector.DEFAULT_BACK_CAMERA,
+                                               preview,
+                                               imageAnalyzer);
             }
             catch (Exception e)
             {
@@ -63,9 +73,11 @@ public class MainActivity extends AppCompatActivity
         }, ContextCompat.getMainExecutor(this));
     }
 
-    private void takePhoto()
+    @Override
+    public void analyze(@NonNull ImageProxy image)
     {
-
+        Log.d("IMAGE", image.getWidth() + "x" + image.getHeight());
+        image.close();
     }
 
     @Override
