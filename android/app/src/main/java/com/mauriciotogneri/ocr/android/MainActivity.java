@@ -4,11 +4,21 @@ import android.Manifest;
 import android.Manifest.permission;
 import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
+import android.graphics.BitmapFactory;
+import android.graphics.ImageFormat;
+import android.graphics.Rect;
+import android.graphics.YuvImage;
 import android.os.Bundle;
-import android.util.Log;
+import android.os.Environment;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.nio.ByteBuffer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -18,6 +28,7 @@ import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageAnalysis.Analyzer;
 import androidx.camera.core.ImageProxy;
+import androidx.camera.core.ImageProxy.PlaneProxy;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
@@ -27,6 +38,7 @@ import androidx.core.content.ContextCompat;
 public class MainActivity extends AppCompatActivity implements Analyzer
 {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private File downloads;
 
     private static final int REQUEST_CAMERA_PERMISSION = 10;
 
@@ -35,6 +47,8 @@ public class MainActivity extends AppCompatActivity implements Analyzer
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
+
+        downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
 
         if (cameraPermissionGranted())
         {
@@ -78,17 +92,49 @@ public class MainActivity extends AppCompatActivity implements Analyzer
     @SuppressLint("UnsafeExperimentalUsageError")
     public void analyze(@NonNull ImageProxy imageProxy)
     {
-        //ByteBuffer buffer = imageProxy.getPlanes()[0].getBuffer();
-        //byte[] data = buffer.array();
-
-        Log.d("IMAGE_ANALYZE", imageProxy.getWidth() + "x" + imageProxy.getHeight() + " - " + imageProxy.getPlanes().length);
-
-        /*for (int i = 0; i < data.length; i++)
-        {
-            int pixel = data[i] & 0xff;
-        }*/
+        Bitmap bitmap = bitmap(imageProxy);
+        saveFile(imageProxy, bitmap);
 
         imageProxy.close();
+    }
+
+    private Bitmap bitmap(ImageProxy imageProxy)
+    {
+        PlaneProxy[] planes = imageProxy.getPlanes();
+        ByteBuffer yBuffer = planes[0].getBuffer();
+        ByteBuffer uBuffer = planes[1].getBuffer();
+        ByteBuffer vBuffer = planes[2].getBuffer();
+
+        int ySize = yBuffer.remaining();
+        int uSize = uBuffer.remaining();
+        int vSize = vBuffer.remaining();
+
+        byte[] nv21 = new byte[ySize + uSize + vSize];
+        yBuffer.get(nv21, 0, ySize);
+        vBuffer.get(nv21, ySize, vSize);
+        uBuffer.get(nv21, ySize + vSize, uSize);
+
+        YuvImage yuvImage = new YuvImage(nv21, ImageFormat.NV21, imageProxy.getWidth(), imageProxy.getHeight(), null);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        yuvImage.compressToJpeg(new Rect(0, 0, yuvImage.getWidth(), yuvImage.getHeight()), 75, out);
+
+        byte[] imageBytes = out.toByteArray();
+
+        return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+    }
+
+    private void saveFile(ImageProxy imageProxy, Bitmap bitmap)
+    {
+        try
+        {
+            File file = new File(downloads, String.format("%s.jpg", imageProxy.getImageInfo().getTimestamp()));
+            FileOutputStream outStream = new FileOutputStream(file);
+            bitmap.compress(CompressFormat.JPEG, 100, outStream);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     @Override
