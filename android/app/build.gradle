@@ -1,0 +1,43 @@
+apply plugin: 'com.android.application'
+
+android
+{
+    compileSdkVersion 30
+    buildToolsVersion '30.0.2'
+
+    defaultConfig
+    {
+        applicationId 'com.mauriciotogneri.ocr.android'
+        minSdkVersion 21
+        targetSdkVersion 30
+        versionCode 1
+        versionName '1.0.0'
+    }
+
+    dexOptions
+    {
+        javaMaxHeapSize '2g'
+        preDexLibraries true
+    }
+
+    compileOptions
+    {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+ext
+{
+    camerax = '1.0.0-beta12'
+}
+
+dependencies
+{
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'com.google.android.material:material:1.2.1'
+
+    implementation "androidx.camera:camera-camera2:$camerax"
+    implementation "androidx.camera:camera-lifecycle:$camerax"
+    implementation 'androidx.camera:camera-view:1.0.0-alpha19'
+}
