@@ -13,6 +13,7 @@ import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Size;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -73,7 +74,9 @@ public class MainActivity extends AppCompatActivity implements Analyzer
                 PreviewView previewView = findViewById(R.id.preview);
                 preview.setSurfaceProvider(previewView.getSurfaceProvider());
 
-                ImageAnalysis imageAnalyzer = new ImageAnalysis.Builder().build();
+                ImageAnalysis imageAnalyzer = new ImageAnalysis.Builder()
+                        .setTargetResolution(new Size(previewView.getWidth(), previewView.getHeight()))
+                        .build();
                 imageAnalyzer.setAnalyzer(executor, this);
 
                 cameraProvider.unbindAll();
@@ -94,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements Analyzer
     public void analyze(@NonNull ImageProxy imageProxy)
     {
         Bitmap bitmap = bitmap(imageProxy);
-        saveFile(imageProxy, bitmap);
+        //saveFile(imageProxy, bitmap);
 
         imageProxy.close();
     }
