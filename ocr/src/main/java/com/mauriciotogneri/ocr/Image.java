@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
@@ -45,23 +46,20 @@ public class Image
 
         return new Image(width, height, pixels);
     }
-    @NotNull
-    public static Image toFile(File file) throws IOException
-    {
-        BufferedImage image = ImageIO.read(file);
 
-        int width = image.getWidth();
-        int height = image.getHeight();
-        int[][] pixels = new int[width][height];
+    public void toFile(File file) throws IOException
+    {
+        BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
-                pixels[x][y] = image.getRGB(x, y);
+                bufferedImage.setRGB(x, y, pixel(x, y).value);
             }
         }
 
-        return new Image(width, height, pixels);
+        FileOutputStream fileOutputStream = new FileOutputStream(file);
+        ImageIO.write(bufferedImage, "jpg", fileOutputStream);
     }
 }
