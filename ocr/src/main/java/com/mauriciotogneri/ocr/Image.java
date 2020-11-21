@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Image
 {
@@ -30,7 +31,20 @@ public class Image
 
     public Image binarize()
     {
-        return transform(Pixel::binarize);
+        int sum = 0;
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                Pixel pixel = pixel(x, y);
+                sum += pixel.average();
+            }
+        }
+
+        int average = sum / (width * height);
+
+        return transform(pixel -> pixel.binarize(150));
     }
 
     public Image transform(Pixel.Transform transform)
@@ -73,7 +87,20 @@ public class Image
             }
         }
 
-        return symbols;
+        int sumSizes = 0;
+
+        for (Symbol symbol : symbols)
+        {
+            sumSizes += symbol.size();
+        }
+
+        int averageSize = sumSizes / symbols.size();
+        int sqrt = (int) Math.sqrt(averageSize);
+
+        return symbols
+                .stream()
+                .filter(symbol -> (symbol.height >= sqrt) || (symbol.width >= sqrt))
+                .collect(Collectors.toList());
     }
 
     public List<Position> positions(Position position, Set<Position> visited)

@@ -14,7 +14,6 @@ public class Main
         {
             ImageFile.save(symbol.image(), "png", new File("output/" + symbol.x + "-" + symbol.y + ".png"));
         }
-        //ImageFile.save(image.binarize(), "jpg", new File("output/image2.jpg"));
-        //ImageFile.save(image.binarize(), "png", new File("output/image2.png"));
+        ImageFile.save(image.binarize(), "png", new File("output/image.png"));
     }
 }

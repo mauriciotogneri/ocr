@@ -45,10 +45,10 @@ public class Pixel
         return new Pixel(blackAndWhite);
     }
 
-    public Pixel binarize()
+    public Pixel binarize(int threshold)
     {
         int average = average();
-        int value = (average > 127) ? 255 : 0;
+        int value = (average > threshold) ? 255 : 0;
         int binarized = (alpha << 24) | (value << 16) | (value << 8) | value;
 
         return new Pixel(binarized);
