@@ -1,5 +1,7 @@
 package com.mauriciotogneri.ocr;
 
+import java.util.List;
+
 public class Symbol
 {
     public final int x;
@@ -42,5 +44,48 @@ public class Symbol
         }
 
         return new Image(width, height, pixels);
+    }
+
+    public static Symbol fromPositions(List<Position> positions)
+    {
+        int minX = Integer.MAX_VALUE;
+        int minY = Integer.MAX_VALUE;
+        int maxX = 0;
+        int maxY = 0;
+
+        for (Position position : positions)
+        {
+            if (position.x < minX)
+            {
+                minX = position.x;
+            }
+
+            if (position.x > maxX)
+            {
+                maxX = position.x;
+            }
+
+            if (position.y < minY)
+            {
+                minY = position.y;
+            }
+
+            if (position.y > maxY)
+            {
+                maxY = position.y;
+            }
+        }
+
+        int width = maxX - minX + 1;
+        int height = maxY - minY + 1;
+
+        boolean[][] data = new boolean[width][height];
+
+        for (Position position : positions)
+        {
+            data[position.x - minX][position.y - minY] = true;
+        }
+
+        return new Symbol(minX, minY, new Matrix(width, height, data));
     }
 }

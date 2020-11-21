@@ -52,23 +52,22 @@ public class Image
     public List<Symbol> symbols()
     {
         List<Symbol> symbols = new ArrayList<>();
-        Set<String> visited = new HashSet<>();
+        Set<Position> visited = new HashSet<>();
 
-        for (int y = 0; y < height; y++)
+        for (int x = 0; x < width; x++)
         {
-            for (int x = 0; x < width; x++)
+            for (int y = 0; y < height; y++)
             {
-                String coordinates = x + "-" + y;
+                Position position = new Position(x, y);
 
-                if (!visited.contains(coordinates))
+                if (!visited.contains(position))
                 {
-                    visited.add(coordinates);
+                    List<Position> positions = positions(position, visited);
 
-                    Pixel pixel = pixel(x, y);
-
-                    if (pixel.isBlack())
+                    if (!positions.isEmpty())
                     {
-                        symbols.add(symbol(x, y, 1, 1, visited));
+                        Symbol symbol = Symbol.fromPositions(positions);
+                        symbols.add(symbol);
                     }
                 }
             }
@@ -77,8 +76,53 @@ public class Image
         return symbols;
     }
 
-    public Symbol symbol(int x, int y, int width, int height, Set<String> visited)
+    public List<Position> positions(Position position, Set<Position> visited)
     {
+        List<Position> positions = new ArrayList<>();
+
+        if (pixel(position.x, position.y).isBlack() && !visited.contains(position))
+        {
+            visited.add(position);
+            positions.add(position);
+
+            positions.addAll(positions(position.up(), visited));
+            positions.addAll(positions(position.right(), visited));
+            positions.addAll(positions(position.down(), visited));
+            positions.addAll(positions(position.left(), visited));
+        }
+
+        return positions;
+    }
+
+    public Symbol symbol(Position position, Set<Position> visited)
+    {
+        List<Position> positions = new ArrayList<>();
+        positions.add(position);
+
+        Position up = position.up();
+
+        return new Symbol(0, 0, new Matrix(width, height, new boolean[][] {{true}}));
+    }
+
+    public Symbol symbol(int x, int y, int width, int height, Set<Position> visited)
+    {
+        int x1 = x - 1;
+        int y1 = y;
+
+        String coordinates = x + "-" + y;
+
+        if (!visited.contains(coordinates))
+        {
+            //visited.add(coordinates);
+
+            Pixel pixel = pixel(x, y);
+
+            if (pixel.isBlack())
+            {
+
+            }
+        }
+
         return new Symbol(x, y, new Matrix(width, height, new boolean[][] {{true}}));
     }
 }
