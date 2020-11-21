@@ -39,7 +39,7 @@ public class Image
         {
             for (int i = 0; i < width; i++)
             {
-                pixels[(j * height) + i] = image.getRGB(j, i);
+                pixels[(j * height) + i] = image.getRGB(i, j);
             }
         }
 
