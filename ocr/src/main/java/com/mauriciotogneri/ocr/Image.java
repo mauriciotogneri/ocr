@@ -1,8 +1,10 @@
 package com.mauriciotogneri.ocr;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -32,19 +34,40 @@ public class Image
     public Image binarize()
     {
         int sum = 0;
+        Map<Integer, Integer> map = new HashMap<>();
 
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
                 Pixel pixel = pixel(x, y);
-                sum += pixel.average();
+                int value = pixel.average();
+                sum += value;
+
+                if (map.containsKey(value))
+                {
+                    map.put(value, map.get(value) + 1);
+                }
+                else
+                {
+                    map.put(value, 1);
+                }
             }
+        }
+
+        StringBuilder builder = new StringBuilder();
+
+        for (Integer a : map.keySet())
+        {
+            builder.append(a);
+            builder.append(";");
+            builder.append(map.get(a));
+            builder.append("\n");
         }
 
         int average = sum / (width * height);
 
-        return transform(pixel -> pixel.binarize(150));
+        return transform(pixel -> pixel.binarize(165));
     }
 
     public Image transform(Pixel.Transform transform)
@@ -67,6 +90,7 @@ public class Image
     {
         List<Symbol> symbols = new ArrayList<>();
         Set<Position> visited = new HashSet<>();
+        int sumSizes = 0;
 
         for (int x = 0; x < width; x++)
         {
@@ -81,17 +105,11 @@ public class Image
                     if (!positions.isEmpty())
                     {
                         Symbol symbol = Symbol.fromPositions(positions);
+                        sumSizes += symbol.size();
                         symbols.add(symbol);
                     }
                 }
             }
-        }
-
-        int sumSizes = 0;
-
-        for (Symbol symbol : symbols)
-        {
-            sumSizes += symbol.size();
         }
 
         int averageSize = sumSizes / symbols.size();
@@ -107,7 +125,12 @@ public class Image
     {
         List<Position> positions = new ArrayList<>();
 
-        if (pixel(position.x, position.y).isBlack() && !visited.contains(position))
+        if ((position.x >= 0) &&
+                (position.x < width) &&
+                (position.y >= 0) &&
+                (position.y < height) &&
+                pixel(position.x, position.y).isBlack() &&
+                !visited.contains(position))
         {
             visited.add(position);
             positions.add(position);
