@@ -1,7 +1,9 @@
 package com.mauriciotogneri.ocr;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Image
 {
@@ -50,17 +52,33 @@ public class Image
     public List<Symbol> symbols()
     {
         List<Symbol> symbols = new ArrayList<>();
+        Set<String> visited = new HashSet<>();
 
-        boolean[][] matrix = new boolean[2][3];
-        matrix[0] = new boolean[] {true, false, true};
-        matrix[1] = new boolean[] {false, true, false};
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                String coordinates = x + "-" + y;
 
-        symbols.add(new Symbol(
-                0,
-                0,
-                new Matrix(2, 3, matrix)
-        ));
+                if (!visited.contains(coordinates))
+                {
+                    visited.add(coordinates);
+
+                    Pixel pixel = pixel(x, y);
+
+                    if (pixel.isBlack())
+                    {
+                        symbols.add(symbol(x, y, 1, 1, visited));
+                    }
+                }
+            }
+        }
 
         return symbols;
+    }
+
+    public Symbol symbol(int x, int y, int width, int height, Set<String> visited)
+    {
+        return new Symbol(x, y, new Matrix(width, height, new boolean[][] {{true}}));
     }
 }
