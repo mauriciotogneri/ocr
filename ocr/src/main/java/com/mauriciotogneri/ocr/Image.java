@@ -25,17 +25,27 @@ public class Image
 
     public Image grayScale()
     {
-        int[][] bwPixels = new int[width][height];
+        return transform(Pixel::grayScale);
+    }
+
+    public Image binarize()
+    {
+        return transform(Pixel::binarize);
+    }
+
+    public Image transform(Pixel.Transform transform)
+    {
+        int[][] pixels = new int[width][height];
 
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
                 Pixel pixel = pixel(x, y);
-                bwPixels[x][y] = pixel.grayScale().value;
+                pixels[x][y] = transform.transform(pixel).value;
             }
         }
 
-        return new Image(width, height, bwPixels);
+        return new Image(width, height, pixels);
     }
 }
