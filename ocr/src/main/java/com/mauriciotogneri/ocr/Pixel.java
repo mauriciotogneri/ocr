@@ -17,6 +17,11 @@ public class Pixel
         this.blue = value & 0xff;
     }
 
+    public Pixel(int alpha, int red, int gree, int blue)
+    {
+        this((alpha << 24) | (red << 16) | (gree << 8) | blue);
+    }
+
     public int average()
     {
         return (red + green + blue) / 3;

@@ -1,5 +1,8 @@
 package com.mauriciotogneri.ocr;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Image
 {
     public final int width;
@@ -42,5 +45,22 @@ public class Image
         }
 
         return new Image(width, height, pixels);
+    }
+
+    public List<Symbol> symbols()
+    {
+        List<Symbol> symbols = new ArrayList<>();
+
+        boolean[][] matrix = new boolean[2][3];
+        matrix[0] = new boolean[] {true, false, true};
+        matrix[1] = new boolean[] {false, true, false};
+
+        symbols.add(new Symbol(
+                0,
+                0,
+                new Matrix(2, 3, matrix)
+        ));
+
+        return symbols;
     }
 }

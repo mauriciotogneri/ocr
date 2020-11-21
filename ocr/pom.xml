@@ -9,7 +9,7 @@
     <artifactId>ocr</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
-    <name>API</name>
+    <name>OCR</name>
 
     <build>
         <plugins>
