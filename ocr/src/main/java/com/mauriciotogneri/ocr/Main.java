@@ -6,7 +6,7 @@ public class Main
 {
     public static void main(String[] args) throws Exception
     {
-        Image image = Image.fromFile(new File("image.jpg"));
-        image.toFile(new File("image2.jpg"));
+        Image image = ImageFile.load(new File("image.jpg"));
+        ImageFile.save(image, new File("image2.jpg"));
     }
 }

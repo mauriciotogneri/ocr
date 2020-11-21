@@ -1,6 +1,7 @@
 package com.mauriciotogneri.orc.test;
 
 import com.mauriciotogneri.ocr.Image;
+import com.mauriciotogneri.ocr.ImageFile;
 import com.mauriciotogneri.ocr.Pixel;
 
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,7 @@ public class ImageTest
     @Test
     public void example() throws IOException
     {
-        Image image = Image.fromFile(new File("src/test/resources/test.png"));
+        Image image = ImageFile.load(new File("src/test/resources/test.png"));
 
         Pixel pixel00 = image.pixel(0, 0);
         assertEquals(255, pixel00.alpha);
