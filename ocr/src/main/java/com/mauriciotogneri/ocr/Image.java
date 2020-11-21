@@ -17,4 +17,25 @@ public class Image
     {
         return new Pixel(pixels[x][y]);
     }
+
+    public void pixel(int x, int y, int value)
+    {
+        pixels[x][y] = value;
+    }
+
+    public Image grayScale()
+    {
+        int[][] bwPixels = new int[width][height];
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                Pixel pixel = pixel(x, y);
+                bwPixels[x][y] = pixel.grayScale().value;
+            }
+        }
+
+        return new Image(width, height, bwPixels);
+    }
 }

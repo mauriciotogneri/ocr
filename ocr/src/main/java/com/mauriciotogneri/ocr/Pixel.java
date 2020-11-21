@@ -11,9 +11,17 @@ public class Pixel
     public Pixel(int value)
     {
         this.value = value;
-        this.alpha = value >> 24 & 255;
-        this.red = value >> 16 & 255;
-        this.green = value >> 8 & 255;
-        this.blue = value & 255;
+        this.alpha = value >> 24 & 0xff;
+        this.red = value >> 16 & 0xff;
+        this.green = value >> 8 & 0xff;
+        this.blue = value & 0xff;
+    }
+
+    public Pixel grayScale()
+    {
+        int average = (red + green + blue) / 3;
+        int blackAndWhite = (alpha << 24) | (average << 16) | (average << 8) | average;
+
+        return new Pixel(blackAndWhite);
     }
 }
