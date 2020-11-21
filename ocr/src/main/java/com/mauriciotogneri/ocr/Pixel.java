@@ -2,6 +2,7 @@ package com.mauriciotogneri.ocr;
 
 public class Pixel
 {
+    public final int value;
     public final int alpha;
     public final int red;
     public final int green;
@@ -9,6 +10,7 @@ public class Pixel
 
     public Pixel(int value)
     {
+        this.value = value;
         this.alpha = value >> 24 & 255;
         this.red = value >> 16 & 255;
         this.green = value >> 8 & 255;

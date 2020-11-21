@@ -12,18 +12,18 @@ public class Image
 {
     public final int width;
     public final int height;
-    public final int[] pixels;
+    public final int[][] pixels;
 
-    public Image(int width, int height, int[] pixels)
+    public Image(int width, int height, int[][] pixels)
     {
         this.width = width;
         this.height = height;
         this.pixels = pixels;
     }
 
-    public Pixel pixel(int i, int j)
+    public Pixel pixel(int x, int y)
     {
-        return new Pixel(pixels[(j * height) + i]);
+        return new Pixel(pixels[x][y]);
     }
 
     @NotNull
@@ -33,13 +33,32 @@ public class Image
 
         int width = image.getWidth();
         int height = image.getHeight();
-        int[] pixels = new int[width * height];
+        int[][] pixels = new int[width][height];
 
-        for (int j = 0; j < height; j++)
+        for (int x = 0; x < width; x++)
         {
-            for (int i = 0; i < width; i++)
+            for (int y = 0; y < height; y++)
             {
-                pixels[(j * height) + i] = image.getRGB(i, j);
+                pixels[x][y] = image.getRGB(x, y);
+            }
+        }
+
+        return new Image(width, height, pixels);
+    }
+    @NotNull
+    public static Image toFile(File file) throws IOException
+    {
+        BufferedImage image = ImageIO.read(file);
+
+        int width = image.getWidth();
+        int height = image.getHeight();
+        int[][] pixels = new int[width][height];
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                pixels[x][y] = image.getRGB(x, y);
             }
         }
 
