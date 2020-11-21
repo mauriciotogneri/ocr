@@ -31,7 +31,7 @@ public class ImageFile
         return new Image(width, height, pixels);
     }
 
-    public static void save(Image image, File file) throws IOException
+    public static void save(Image image, String format, File file) throws IOException
     {
         BufferedImage bufferedImage = new BufferedImage(image.width, image.height, BufferedImage.TYPE_INT_RGB);
 
@@ -44,6 +44,6 @@ public class ImageFile
         }
 
         FileOutputStream fileOutputStream = new FileOutputStream(file);
-        ImageIO.write(bufferedImage, "jpg", fileOutputStream);
+        ImageIO.write(bufferedImage, format, fileOutputStream);
     }
 }
