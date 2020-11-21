@@ -54,9 +54,9 @@ public class Image
         List<Symbol> symbols = new ArrayList<>();
         Set<String> visited = new HashSet<>();
 
-        for (int x = 0; x < width; x++)
+        for (int y = 0; y < height; y++)
         {
-            for (int y = 0; y < height; y++)
+            for (int x = 0; x < width; x++)
             {
                 String coordinates = x + "-" + y;
 
