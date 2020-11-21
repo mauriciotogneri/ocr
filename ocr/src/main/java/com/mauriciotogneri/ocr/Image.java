@@ -18,11 +18,6 @@ public class Image
         return new Pixel(pixels[x][y]);
     }
 
-    public void pixel(int x, int y, int value)
-    {
-        pixels[x][y] = value;
-    }
-
     public Image grayScale()
     {
         return transform(Pixel::grayScale);
