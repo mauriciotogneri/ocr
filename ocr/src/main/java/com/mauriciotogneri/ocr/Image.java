@@ -85,44 +85,16 @@ public class Image
             visited.add(position);
             positions.add(position);
 
-            positions.addAll(positions(position.up(), visited));
-            positions.addAll(positions(position.right(), visited));
-            positions.addAll(positions(position.down(), visited));
-            positions.addAll(positions(position.left(), visited));
+            positions.addAll(positions(position.move(0, -1), visited));
+            positions.addAll(positions(position.move(1, -1), visited));
+            positions.addAll(positions(position.move(1, 0), visited));
+            positions.addAll(positions(position.move(1, 1), visited));
+            positions.addAll(positions(position.move(0, 1), visited));
+            positions.addAll(positions(position.move(-1, 1), visited));
+            positions.addAll(positions(position.move(-1, 0), visited));
+            positions.addAll(positions(position.move(-1, -1), visited));
         }
 
         return positions;
-    }
-
-    public Symbol symbol(Position position, Set<Position> visited)
-    {
-        List<Position> positions = new ArrayList<>();
-        positions.add(position);
-
-        Position up = position.up();
-
-        return new Symbol(0, 0, new Matrix(width, height, new boolean[][] {{true}}));
-    }
-
-    public Symbol symbol(int x, int y, int width, int height, Set<Position> visited)
-    {
-        int x1 = x - 1;
-        int y1 = y;
-
-        String coordinates = x + "-" + y;
-
-        if (!visited.contains(coordinates))
-        {
-            //visited.add(coordinates);
-
-            Pixel pixel = pixel(x, y);
-
-            if (pixel.isBlack())
-            {
-
-            }
-        }
-
-        return new Symbol(x, y, new Matrix(width, height, new boolean[][] {{true}}));
     }
 }

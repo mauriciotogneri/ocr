@@ -13,24 +13,9 @@ public class Position
         this.y = y;
     }
 
-    public Position up()
+    public Position move(int x, int y)
     {
-        return new Position(x, y - 1);
-    }
-
-    public Position down()
-    {
-        return new Position(x, y + 1);
-    }
-
-    public Position left()
-    {
-        return new Position(x - 1, y);
-    }
-
-    public Position right()
-    {
-        return new Position(x + 1, y);
+        return new Position(this.x + x, this.y + y);
     }
 
     @Override

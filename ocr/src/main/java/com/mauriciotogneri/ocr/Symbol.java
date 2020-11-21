@@ -19,6 +19,11 @@ public class Symbol
         this.matrix = matrix;
     }
 
+    public int size()
+    {
+        return width * height;
+    }
+
     public Image image()
     {
         int[][] pixels = new int[width][height];
