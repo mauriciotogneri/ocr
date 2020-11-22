@@ -20,6 +20,7 @@ import android.os.Environment;
 import android.util.Size;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import com.mauriciotogneri.ocr.Image;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -41,6 +42,7 @@ import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+// https://developers.google.com/ml-kit/language/translation/android
 public class MainActivity extends AppCompatActivity implements Analyzer
 {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -102,6 +104,29 @@ public class MainActivity extends AppCompatActivity implements Analyzer
     {
         Bitmap bitmap = bitmap(imageProxy);
         //saveFile(imageProxy, bitmap);
+
+        int[][] pixels = new int[bitmap.getWidth()][bitmap.getHeight()];
+
+        for (int x = 0; x < bitmap.getWidth(); x++)
+        {
+            for (int y = 0; y < bitmap.getHeight(); y++)
+            {
+                pixels[x][y] = bitmap.getPixel(x, y);
+            }
+        }
+
+        Image cameraImage = new Image(bitmap.getWidth(), bitmap.getHeight(), pixels);
+        Image binarizedImage = cameraImage.binarize();
+
+        
+
+        /*List<Symbol> symbols = cameraImage.symbols();
+
+        for (Symbol symbol : symbols)
+        {
+            Image symbolImage = symbol.image();
+            System.out.println(symbolImage);
+        }*/
 
         imageProxy.close();
     }
