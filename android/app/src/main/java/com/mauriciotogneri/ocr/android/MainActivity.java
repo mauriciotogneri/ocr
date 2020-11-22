@@ -9,7 +9,6 @@ import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
-import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.media.Image;
@@ -36,6 +35,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -55,6 +56,7 @@ import androidx.core.content.ContextCompat;
 public class MainActivity extends AppCompatActivity implements Analyzer
 {
     private TextView textView;
+    private CustomView customView;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private File downloads;
     private Translator englishSpanishTranslator;
@@ -68,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements Analyzer
         setContentView(R.layout.main_activity);
 
         textView = findViewById(R.id.text);
+        customView = findViewById(R.id.custom);
         downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
 
         TranslatorOptions options = new TranslatorOptions.Builder()
@@ -158,29 +161,20 @@ public class MainActivity extends AppCompatActivity implements Analyzer
     private void analyzeText(Text text)
     {
         String resultText = text.getText();
+        List<Rect> rects = new ArrayList<>();
 
         for (Text.TextBlock block : text.getTextBlocks())
         {
-            String blockText = block.getText();
-            Point[] blockCornerPoints = block.getCornerPoints();
-            Rect blockFrame = block.getBoundingBox();
-
             for (Text.Line line : block.getLines())
             {
                 String lineText = line.getText();
-                Point[] lineCornerPoints = line.getCornerPoints();
                 Rect lineFrame = line.getBoundingBox();
-
-                for (Text.Element element : line.getElements())
-                {
-                    String elementText = element.getText();
-                    Point[] elementCornerPoints = element.getCornerPoints();
-                    Rect elementFrame = element.getBoundingBox();
-                }
-
+                rects.add(lineFrame);
                 resultText += lineText + "\n";
             }
         }
+
+        customView.rects(rects);
 
         englishSpanishTranslator.translate(resultText)
                 .addOnSuccessListener(translatedText -> textView.setText(translatedText))
