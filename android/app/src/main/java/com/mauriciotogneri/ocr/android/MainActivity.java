@@ -41,6 +41,7 @@ import java.util.concurrent.Executors;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.camera.core.AspectRatio;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageAnalysis.Analyzer;
@@ -121,8 +122,8 @@ public class MainActivity extends AppCompatActivity implements Analyzer
                 preview.setSurfaceProvider(previewView.getSurfaceProvider());
 
                 ImageAnalysis imageAnalyzer = new ImageAnalysis.Builder()
-                        //.setTargetResolution(new Size(previewView.getWidth(), previewView.getHeight()))
                         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                        .setTargetAspectRatio(AspectRatio.RATIO_16_9)
                         .build();
                 imageAnalyzer.setAnalyzer(executor, this);
 
@@ -166,16 +167,16 @@ public class MainActivity extends AppCompatActivity implements Analyzer
         {
             for (Text.Line line : block.getLines())
             {
-                String lineText = line.getText();
-                Rect lineFrame = line.getBoundingBox();
-                areas.add(lineFrame);
-                resultText += lineText + "\n";
+                Rect rect = line.getBoundingBox();
+                areas.add(rect);
+                resultText += line.getText() + "\n";
             }
         }
 
         customView.areas(image, areas);
 
-        englishSpanishTranslator.translate(resultText)
+        englishSpanishTranslator
+                .translate(resultText)
                 .addOnSuccessListener(translatedText -> textView.setText(translatedText))
                 .addOnFailureListener(Throwable::printStackTrace);
     }
