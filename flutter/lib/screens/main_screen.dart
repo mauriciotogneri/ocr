@@ -14,6 +14,8 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   CameraController _camera;
   bool _cameraInitialized = false;
+  bool _isDetecting = false;
+  String detectedText = 'YOLO';
 
   @override
   void initState() {
@@ -32,17 +34,11 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future _processCameraImage(CameraImage image) async {
-    /*final FirebaseVisionImageMetadata metadata = FirebaseVisionImageMetadata(
-      rawFormat: image.format.raw,
-      size: Size(image.width.toDouble(), image.height.toDouble()),
-      rotation: ImageRotation.rotation90,
-      planeData: image.planes
-          .map((currentPlane) => FirebaseVisionImagePlaneMetadata(
-              bytesPerRow: currentPlane.bytesPerRow,
-              height: currentPlane.height,
-              width: currentPlane.width))
-          .toList(),
-    );*/
+    if (_isDetecting) {
+      return;
+    }
+
+    _isDetecting = true;
 
     final ImageRotation rotation = rotationIntToImageRotation(
       _camera.description.sensorOrientation,
@@ -63,7 +59,11 @@ class _MainScreenState extends State<MainScreen> {
       }
     }
 
-    print(result);
+    setState(() {
+      detectedText = result;
+    });
+
+    _isDetecting = false;
   }
 
   Uint8List concatenatePlanes(List<Plane> planes) {
@@ -111,13 +111,23 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Center(
-        child: _cameraInitialized
-            ? AspectRatio(
-                aspectRatio: _camera.value.aspectRatio,
-                child: CameraPreview(_camera),
-              )
-            : const CircularProgressIndicator(),
+      body: Stack(
+        children: [
+          Center(
+            child: _cameraInitialized
+                ? AspectRatio(
+                    aspectRatio: _camera.value.aspectRatio,
+                    child: CameraPreview(_camera),
+                  )
+                : const CircularProgressIndicator(),
+          ),
+          Center(
+            child: Text(
+              detectedText,
+              style: const TextStyle(color: Colors.white, fontSize: 20),
+            ),
+          ),
+        ],
       ),
     );
   }
