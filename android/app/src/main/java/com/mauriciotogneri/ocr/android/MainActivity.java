@@ -14,7 +14,6 @@ import android.graphics.YuvImage;
 import android.media.Image;
 import android.os.Bundle;
 import android.os.Environment;
-import android.util.Size;
 import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -122,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements Analyzer
                 preview.setSurfaceProvider(previewView.getSurfaceProvider());
 
                 ImageAnalysis imageAnalyzer = new ImageAnalysis.Builder()
-                        .setTargetResolution(new Size(previewView.getWidth(), previewView.getHeight()))
+                        //.setTargetResolution(new Size(previewView.getWidth(), previewView.getHeight()))
                         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                         .build();
                 imageAnalyzer.setAnalyzer(executor, this);
@@ -152,16 +151,16 @@ public class MainActivity extends AppCompatActivity implements Analyzer
             InputImage image = InputImage.fromMediaImage(mediaImage, imageProxy.getImageInfo().getRotationDegrees());
             TextRecognizer recognizer = TextRecognition.getClient();
             recognizer.process(image)
-                    .addOnSuccessListener(this::analyzeText)
+                    .addOnSuccessListener(text -> analyzeText(image, text))
                     .addOnFailureListener(Throwable::printStackTrace)
                     .addOnCompleteListener(task -> imageProxy.close());
         }
     }
 
-    private void analyzeText(Text text)
+    private void analyzeText(InputImage image, Text text)
     {
         String resultText = text.getText();
-        List<Rect> rects = new ArrayList<>();
+        List<Rect> areas = new ArrayList<>();
 
         for (Text.TextBlock block : text.getTextBlocks())
         {
@@ -169,12 +168,12 @@ public class MainActivity extends AppCompatActivity implements Analyzer
             {
                 String lineText = line.getText();
                 Rect lineFrame = line.getBoundingBox();
-                rects.add(lineFrame);
+                areas.add(lineFrame);
                 resultText += lineText + "\n";
             }
         }
 
-        customView.rects(rects);
+        customView.areas(image, areas);
 
         englishSpanishTranslator.translate(resultText)
                 .addOnSuccessListener(translatedText -> textView.setText(translatedText))

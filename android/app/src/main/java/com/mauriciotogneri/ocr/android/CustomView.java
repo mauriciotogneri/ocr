@@ -9,6 +9,8 @@ import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.View;
 
+import com.google.mlkit.vision.common.InputImage;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,7 +18,10 @@ import androidx.annotation.Nullable;
 
 public class CustomView extends View
 {
-    private final List<Rect> rects = new ArrayList<>();
+    private int width = 0;
+    private int height = 0;
+    private final List<Rect> areas = new ArrayList<>();
+    private Paint paint;
 
     public CustomView(Context context)
     {
@@ -38,10 +43,21 @@ public class CustomView extends View
         super(context, attrs, defStyleAttr, defStyleRes);
     }
 
-    public synchronized void rects(List<Rect> rects)
+    public synchronized void areas(InputImage image, List<Rect> areas)
     {
-        this.rects.clear();
-        this.rects.addAll(rects);
+        if ((image.getRotationDegrees() == 0) || (image.getRotationDegrees() == 180))
+        {
+            this.width = image.getWidth();
+            this.height = image.getHeight();
+        }
+        else
+        {
+            this.width = image.getHeight();
+            this.height = image.getWidth();
+        }
+
+        this.areas.clear();
+        this.areas.addAll(areas);
         invalidate();
     }
 
@@ -50,13 +66,25 @@ public class CustomView extends View
     {
         super.onDraw(canvas);
 
-        Paint paint = new Paint();
-        paint.setColor(Color.RED);
-        paint.setStyle(Style.FILL);
-
-        for (Rect rect : rects)
+        if (paint == null)
         {
-            canvas.drawRect(rect, paint);
+            paint = new Paint();
+            paint.setColor(Color.RED);
+            paint.setStyle(Style.FILL);
+        }
+
+        int canvasWidth = getWidth();
+        int canvasHeight = getHeight();
+
+        for (Rect rect : areas)
+        {
+            int left = (int) (((float) rect.left / (float) width) * canvasWidth);
+            int top = (int) (((float) rect.top / (float) height) * canvasHeight);
+            int right = (int) (((float) rect.right / (float) width) * canvasWidth);
+            int bottom = (int) (((float) rect.bottom / (float) height) * canvasHeight);
+            Rect rectAdjusted = new Rect(left, top, right, bottom);
+
+            canvas.drawRect(rectAdjusted, paint);
         }
     }
 }
