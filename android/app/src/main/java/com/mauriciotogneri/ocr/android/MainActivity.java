@@ -14,7 +14,6 @@ import android.graphics.YuvImage;
 import android.media.Image;
 import android.os.Bundle;
 import android.os.Environment;
-import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -34,8 +33,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -55,8 +52,9 @@ import androidx.core.content.ContextCompat;
 
 public class MainActivity extends AppCompatActivity implements Analyzer
 {
-    private TextView textView;
-    private CustomView customView;
+    //private TextView textView;
+    //private CustomView customView;
+    private GraphicOverlay overlay;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private File downloads;
     private Translator englishSpanishTranslator;
@@ -69,8 +67,9 @@ public class MainActivity extends AppCompatActivity implements Analyzer
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
 
-        textView = findViewById(R.id.text);
-        customView = findViewById(R.id.custom);
+        //textView = findViewById(R.id.text);
+        //customView = findViewById(R.id.custom);
+        overlay = findViewById(R.id.overlay);
         downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
 
         TranslatorOptions options = new TranslatorOptions.Builder()
@@ -163,24 +162,24 @@ public class MainActivity extends AppCompatActivity implements Analyzer
     private void analyzeText(InputImage image, Text text)
     {
         String resultText = text.getText();
-        List<Rect> areas = new ArrayList<>();
+
+        overlay.setImageSourceInfo(image.getWidth(), image.getHeight(), false);
+        overlay.clear();
 
         for (Text.TextBlock block : text.getTextBlocks())
         {
             for (Text.Line line : block.getLines())
             {
-                Rect rect = line.getBoundingBox();
-                areas.add(rect);
                 resultText += line.getText() + "\n";
             }
         }
 
-        customView.areas(image, areas);
+        overlay.add(new TextGraphic(overlay, text));
 
-        englishSpanishTranslator
+        /*englishSpanishTranslator
                 .translate(resultText)
                 .addOnSuccessListener(translatedText -> textView.setText(translatedText))
-                .addOnFailureListener(Throwable::printStackTrace);
+                .addOnFailureListener(Throwable::printStackTrace);*/
     }
 
     private Bitmap bitmap(ImageProxy imageProxy)
