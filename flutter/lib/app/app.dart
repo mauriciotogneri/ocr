@@ -1,4 +1,4 @@
-import 'package:real_time_translator/screens/splash_screen.dart';
+import 'package:real_time_translator/screens/main_screen.dart';
 import 'package:flutter/material.dart';
 
 class RealTimeTranslatorApp extends StatelessWidget {
@@ -11,7 +11,7 @@ class RealTimeTranslatorApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const SplashScreen(),
+      home: const MainScreen(),
     );
   }
 }
