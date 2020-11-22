@@ -20,6 +20,11 @@ import android.util.Size;
 import android.widget.TextView;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.mlkit.common.model.DownloadConditions;
+import com.google.mlkit.nl.translate.TranslateLanguage;
+import com.google.mlkit.nl.translate.Translation;
+import com.google.mlkit.nl.translate.Translator;
+import com.google.mlkit.nl.translate.TranslatorOptions;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.text.Text;
 import com.google.mlkit.vision.text.TextRecognition;
@@ -45,12 +50,12 @@ import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-// https://developers.google.com/ml-kit/language/translation/android
 public class MainActivity extends AppCompatActivity implements Analyzer
 {
     private TextView textView;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private File downloads;
+    private Translator englishSpanishTranslator;
 
     private static final int REQUEST_CAMERA_PERMISSION = 10;
 
@@ -63,6 +68,26 @@ public class MainActivity extends AppCompatActivity implements Analyzer
         textView = findViewById(R.id.text);
         downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
 
+        TranslatorOptions options = new TranslatorOptions.Builder()
+                .setSourceLanguage(TranslateLanguage.ENGLISH)
+                .setTargetLanguage(TranslateLanguage.SPANISH)
+                .build();
+
+        englishSpanishTranslator = Translation.getClient(options);
+        DownloadConditions conditions = new DownloadConditions.Builder().build();
+        englishSpanishTranslator.downloadModelIfNeeded(conditions)
+                .addOnSuccessListener(o -> {
+                    System.out.println();
+                    checkCamera();
+                })
+                .addOnFailureListener(e -> {
+                    System.out.println();
+                    e.printStackTrace();
+                });
+    }
+
+    private void checkCamera()
+    {
         if (cameraPermissionGranted())
         {
             startCamera();
@@ -158,7 +183,9 @@ public class MainActivity extends AppCompatActivity implements Analyzer
             }
         }
 
-        textView.setText(resultText);
+        englishSpanishTranslator.translate(resultText)
+                .addOnSuccessListener(translatedText -> textView.setText(translatedText))
+                .addOnFailureListener(Throwable::printStackTrace);
     }
 
     private void analyze2(@NonNull ImageProxy imageProxy)
