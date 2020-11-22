@@ -3,6 +3,7 @@ package com.mauriciotogneri.ocr.android.graphic;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.util.Log;
 
 import com.google.mlkit.vision.label.ImageLabel;
 
@@ -23,24 +24,26 @@ public class LabelGraphic extends GraphicOverlay.Graphic
     public LabelGraphic(GraphicOverlay overlay, List<ImageLabel> labels)
     {
         super(overlay);
+
         this.overlay = overlay;
         this.labels = labels;
-        textPaint = new Paint();
-        textPaint.setColor(Color.WHITE);
-        textPaint.setTextSize(TEXT_SIZE);
 
-        labelPaint = new Paint();
-        labelPaint.setColor(Color.BLACK);
-        labelPaint.setStyle(Paint.Style.FILL);
-        labelPaint.setAlpha(200);
+        this.textPaint = new Paint();
+        this.textPaint.setColor(Color.WHITE);
+        this.textPaint.setTextSize(TEXT_SIZE);
+
+        this.labelPaint = new Paint();
+        this.labelPaint.setColor(Color.BLACK);
+        this.labelPaint.setStyle(Paint.Style.FILL);
+        this.labelPaint.setAlpha(200);
     }
 
     @Override
     public synchronized void draw(Canvas canvas)
     {
-        // First try to find maxWidth and totalHeight in order to draw to the center of the screen.
         float maxWidth = 0;
         float totalHeight = labels.size() * 2 * TEXT_SIZE;
+
         for (ImageLabel label : labels)
         {
             float line1Width = textPaint.measureText(label.getText());
@@ -49,6 +52,8 @@ public class LabelGraphic extends GraphicOverlay.Graphic
                             String.format(
                                     Locale.US, LABEL_FORMAT, label.getConfidence() * 100));
             maxWidth = Math.max(maxWidth, Math.max(line1Width, line2Width));
+
+            Log.d("IMAGE_DEBUG", label.getText());
         }
         float x = Math.max(0, overlay.getWidth() / 2.0f - maxWidth / 2.0f);
         float y = Math.max(200, overlay.getHeight() / 2.0f - totalHeight / 2.0f);

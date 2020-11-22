@@ -2,12 +2,11 @@ package com.mauriciotogneri.ocr.android.activities;
 
 import android.os.Bundle;
 
-import com.google.mlkit.common.model.LocalModel;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.label.ImageLabel;
 import com.google.mlkit.vision.label.ImageLabeler;
 import com.google.mlkit.vision.label.ImageLabeling;
-import com.google.mlkit.vision.label.custom.CustomImageLabelerOptions;
+import com.google.mlkit.vision.label.defaults.ImageLabelerOptions;
 import com.mauriciotogneri.ocr.android.R;
 import com.mauriciotogneri.ocr.android.graphic.GraphicOverlay;
 import com.mauriciotogneri.ocr.android.graphic.LabelGraphic;
@@ -31,13 +30,8 @@ public class CatDetectorActivity extends CameraActivity implements Analyzer
 
         overlay = findViewById(R.id.overlay);
 
-        LocalModel localModel = new LocalModel.Builder()
-                .setAssetFilePath("")
-                .build();
-
-        CustomImageLabelerOptions options = new CustomImageLabelerOptions.Builder(localModel)
+        ImageLabelerOptions options = new ImageLabelerOptions.Builder()
                 .setConfidenceThreshold(0.5f)
-                .setMaxResultCount(5)
                 .build();
 
         imageLabeler = ImageLabeling.getClient(options);
