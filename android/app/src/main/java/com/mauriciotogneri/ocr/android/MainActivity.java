@@ -9,17 +9,21 @@ import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
+import android.media.Image;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.util.Size;
-import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.google.common.util.concurrent.ListenableFuture;
-import com.mauriciotogneri.ocr.Image;
-import com.mauriciotogneri.ocr.Pixel;
+import com.google.mlkit.vision.common.InputImage;
+import com.google.mlkit.vision.text.Text;
+import com.google.mlkit.vision.text.TextRecognition;
+import com.google.mlkit.vision.text.TextRecognizer;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -44,7 +48,7 @@ import androidx.core.content.ContextCompat;
 // https://developers.google.com/ml-kit/language/translation/android
 public class MainActivity extends AppCompatActivity implements Analyzer
 {
-    private ImageView binarized;
+    private TextView textView;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private File downloads;
 
@@ -56,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements Analyzer
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
 
-        binarized = findViewById(R.id.binarized);
+        textView = findViewById(R.id.text);
         downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
 
         if (cameraPermissionGranted())
@@ -84,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements Analyzer
                 ImageAnalysis imageAnalyzer = new ImageAnalysis.Builder()
                         .setTargetResolution(new Size(previewView.getWidth(), previewView.getHeight()))
                         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                        //.setTargetRotation(rotation == 270 ? Surface.ROTATION_270 : Surface.ROTATION_180)
                         .build();
                 imageAnalyzer.setAnalyzer(executor, this);
 
@@ -104,7 +109,61 @@ public class MainActivity extends AppCompatActivity implements Analyzer
     @SuppressLint("UnsafeExperimentalUsageError")
     public void analyze(@NonNull ImageProxy imageProxy)
     {
-        long start = System.currentTimeMillis();
+        analyze1(imageProxy);
+    }
+
+    @SuppressLint("UnsafeExperimentalUsageError")
+    private void analyze1(@NonNull ImageProxy imageProxy)
+    {
+        imageProxy.getImageInfo().getRotationDegrees();
+        Image mediaImage = imageProxy.getImage();
+
+        if (mediaImage != null)
+        {
+            InputImage image = InputImage.fromMediaImage(mediaImage, imageProxy.getImageInfo().getRotationDegrees());
+            //image.getBitmapInternal();
+            Log.d("DEBUG_IMAGE", imageProxy.getImageInfo().getRotationDegrees() + "");
+            TextRecognizer recognizer = TextRecognition.getClient();
+            recognizer.process(image)
+                    .addOnSuccessListener(this::analyzeText)
+                    .addOnFailureListener(Throwable::printStackTrace)
+                    .addOnCompleteListener(task -> imageProxy.close());
+        }
+    }
+
+    private void analyzeText(Text text)
+    {
+        String resultText = text.getText();
+
+        for (Text.TextBlock block : text.getTextBlocks())
+        {
+            String blockText = block.getText();
+            Point[] blockCornerPoints = block.getCornerPoints();
+            Rect blockFrame = block.getBoundingBox();
+
+            for (Text.Line line : block.getLines())
+            {
+                String lineText = line.getText();
+                Point[] lineCornerPoints = line.getCornerPoints();
+                Rect lineFrame = line.getBoundingBox();
+
+                for (Text.Element element : line.getElements())
+                {
+                    String elementText = element.getText();
+                    Point[] elementCornerPoints = element.getCornerPoints();
+                    Rect elementFrame = element.getBoundingBox();
+                }
+
+                resultText += lineText + "\n";
+            }
+        }
+
+        textView.setText(resultText);
+    }
+
+    private void analyze2(@NonNull ImageProxy imageProxy)
+    {
+        /*long start = System.currentTimeMillis();
         Log.d("DEBUG_TIME", imageProxy.toString() + " => START");
 
         long start1 = System.currentTimeMillis();
@@ -146,17 +205,17 @@ public class MainActivity extends AppCompatActivity implements Analyzer
 
         runOnUiThread(() -> binarized.setImageBitmap(binarizedBitmap));
 
-        /*List<Symbol> symbols = cameraImage.symbols();
+        //List<Symbol> symbols = cameraImage.symbols();
 
-        for (Symbol symbol : symbols)
-        {
-            Image symbolImage = symbol.image();
-            System.out.println(symbolImage);
-        }*/
+        //for (Symbol symbol : symbols)
+        //{
+        //    Image symbolImage = symbol.image();
+        //    System.out.println(symbolImage);
+        //}
 
         imageProxy.close();
 
-        Log.d("DEBUG_TIME", imageProxy.toString() + " => END => " + (System.currentTimeMillis() - start) + "ms");
+        Log.d("DEBUG_TIME", imageProxy.toString() + " => END => " + (System.currentTimeMillis() - start) + "ms");*/
     }
 
     private Bitmap bitmap(ImageProxy imageProxy)
