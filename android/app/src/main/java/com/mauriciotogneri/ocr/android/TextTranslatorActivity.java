@@ -12,17 +12,15 @@ import com.google.mlkit.nl.translate.Translator;
 import com.google.mlkit.nl.translate.TranslatorOptions;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.text.Text;
-import com.google.mlkit.vision.text.Text.Line;
 import com.google.mlkit.vision.text.TextRecognition;
 import com.google.mlkit.vision.text.TextRecognizer;
-
-import java.util.List;
+import com.mauriciotogneri.ocr.android.TextGraphic.TranslatedBlock;
 
 import androidx.annotation.NonNull;
 import androidx.camera.core.ImageAnalysis.Analyzer;
 import androidx.camera.core.ImageProxy;
 
-public class MainActivity extends CameraActivity implements Analyzer
+public class TextTranslatorActivity extends CameraActivity implements Analyzer
 {
     private GraphicOverlay overlay;
     private Translator frenchSpanishTranslator;
@@ -32,7 +30,7 @@ public class MainActivity extends CameraActivity implements Analyzer
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main_activity);
+        setContentView(R.layout.text_translator_activity);
 
         overlay = findViewById(R.id.overlay);
 
@@ -124,22 +122,6 @@ public class MainActivity extends CameraActivity implements Analyzer
             overlay.clear();
 
             overlay.add(new TextGraphic(overlay, translatedBlocks));
-        }
-    }
-
-    public static class TranslatedBlock
-    {
-        public String translatedText;
-        public final List<Line> lines;
-
-        public TranslatedBlock(List<Line> lines)
-        {
-            this.lines = lines;
-        }
-
-        public void translatedText(String translatedText)
-        {
-            this.translatedText = translatedText;
         }
     }
 }

@@ -14,7 +14,7 @@
         android:label="@string/app.name"
         android:theme="@style/app.theme">
 
-        <activity android:name=".MainActivity">
+        <activity android:name=".TextTranslatorActivity">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -22,6 +22,8 @@
             </intent-filter>
 
         </activity>
+
+        <activity android:name=".CatDetectorActivity" />
 
         <meta-data
             android:name="com.google.mlkit.vision.DEPENDENCIES"

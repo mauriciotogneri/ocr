@@ -9,7 +9,6 @@ import android.graphics.RectF;
 
 import com.google.mlkit.vision.text.Text.Line;
 import com.mauriciotogneri.ocr.android.GraphicOverlay.Graphic;
-import com.mauriciotogneri.ocr.android.MainActivity.TranslatedBlock;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -122,5 +121,21 @@ public class TextGraphic extends Graphic
         rect.bottom = translateY(rect.bottom);
 
         return rect;
+    }
+
+    public static class TranslatedBlock
+    {
+        public String translatedText;
+        public final List<Line> lines;
+
+        public TranslatedBlock(List<Line> lines)
+        {
+            this.lines = lines;
+        }
+
+        public void translatedText(String translatedText)
+        {
+            this.translatedText = translatedText;
+        }
     }
 }
