@@ -19,9 +19,12 @@ import android.util.Log;
 import android.util.Size;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mlkit.common.model.DownloadConditions;
+import com.google.mlkit.common.model.RemoteModelManager;
 import com.google.mlkit.nl.translate.TranslateLanguage;
+import com.google.mlkit.nl.translate.TranslateRemoteModel;
 import com.google.mlkit.nl.translate.Translation;
 import com.google.mlkit.nl.translate.Translator;
 import com.google.mlkit.nl.translate.TranslatorOptions;
@@ -69,21 +72,27 @@ public class MainActivity extends AppCompatActivity implements Analyzer
         downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
 
         TranslatorOptions options = new TranslatorOptions.Builder()
-                .setSourceLanguage(TranslateLanguage.ENGLISH)
+                .setSourceLanguage(TranslateLanguage.FRENCH)
                 .setTargetLanguage(TranslateLanguage.SPANISH)
                 .build();
 
         englishSpanishTranslator = Translation.getClient(options);
+
+        downloadModel(TranslateLanguage.SPANISH, task1 -> {
+            downloadModel(TranslateLanguage.FRENCH, task2 -> {
+                checkCamera();
+            });
+        });
+    }
+
+    private void downloadModel(String language, OnCompleteListener<Void> listener)
+    {
+        RemoteModelManager modelManager = RemoteModelManager.getInstance();
         DownloadConditions conditions = new DownloadConditions.Builder().build();
-        englishSpanishTranslator.downloadModelIfNeeded(conditions)
-                .addOnSuccessListener(o -> {
-                    System.out.println();
-                    checkCamera();
-                })
-                .addOnFailureListener(e -> {
-                    System.out.println();
-                    e.printStackTrace();
-                });
+        TranslateRemoteModel spanishModel = new TranslateRemoteModel.Builder(language).build();
+        modelManager.download(spanishModel, conditions)
+                .addOnSuccessListener(v -> listener.onComplete(null))
+                .addOnFailureListener(Throwable::printStackTrace);
     }
 
     private void checkCamera()
