@@ -12,6 +12,7 @@ import com.mauriciotogneri.ocr.android.graphic.GraphicOverlay;
 import com.mauriciotogneri.ocr.android.graphic.LabelGraphic;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import androidx.annotation.NonNull;
 import androidx.camera.core.ImageAnalysis.Analyzer;
@@ -50,8 +51,10 @@ public class CatDetectorActivity extends CameraActivity implements Analyzer
 
     private void objectsDetected(@NonNull ImageProxy imageProxy, @NonNull List<ImageLabel> objects)
     {
+        List<ImageLabel> cats = objects.stream().filter(imageLabel -> imageLabel.getText().trim().toLowerCase().equals("cat")).collect(Collectors.toList());
+
         overlay.clear();
-        overlay.add(new LabelGraphic(overlay, objects));
+        overlay.add(new LabelGraphic(overlay, cats));
         overlay.setImageSourceInfo(imageProxy.getWidth(), imageProxy.getHeight(), false);
     }
 }
