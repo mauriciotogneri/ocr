@@ -15,7 +15,6 @@ import android.graphics.YuvImage;
 import android.media.Image;
 import android.os.Bundle;
 import android.os.Environment;
-import android.util.Log;
 import android.util.Size;
 import android.widget.TextView;
 
@@ -122,7 +121,6 @@ public class MainActivity extends AppCompatActivity implements Analyzer
                 ImageAnalysis imageAnalyzer = new ImageAnalysis.Builder()
                         .setTargetResolution(new Size(previewView.getWidth(), previewView.getHeight()))
                         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                        //.setTargetRotation(rotation == 270 ? Surface.ROTATION_270 : Surface.ROTATION_180)
                         .build();
                 imageAnalyzer.setAnalyzer(executor, this);
 
@@ -143,20 +141,12 @@ public class MainActivity extends AppCompatActivity implements Analyzer
     @SuppressLint("UnsafeExperimentalUsageError")
     public void analyze(@NonNull ImageProxy imageProxy)
     {
-        analyze1(imageProxy);
-    }
-
-    @SuppressLint("UnsafeExperimentalUsageError")
-    private void analyze1(@NonNull ImageProxy imageProxy)
-    {
         imageProxy.getImageInfo().getRotationDegrees();
         Image mediaImage = imageProxy.getImage();
 
         if (mediaImage != null)
         {
             InputImage image = InputImage.fromMediaImage(mediaImage, imageProxy.getImageInfo().getRotationDegrees());
-            //image.getBitmapInternal();
-            Log.d("DEBUG_IMAGE", imageProxy.getImageInfo().getRotationDegrees() + "");
             TextRecognizer recognizer = TextRecognition.getClient();
             recognizer.process(image)
                     .addOnSuccessListener(this::analyzeText)
@@ -197,63 +187,6 @@ public class MainActivity extends AppCompatActivity implements Analyzer
                 .addOnFailureListener(Throwable::printStackTrace);
     }
 
-    private void analyze2(@NonNull ImageProxy imageProxy)
-    {
-        /*long start = System.currentTimeMillis();
-        Log.d("DEBUG_TIME", imageProxy.toString() + " => START");
-
-        long start1 = System.currentTimeMillis();
-        Bitmap bitmap = bitmap(imageProxy);
-        Log.d("DEBUG_TIME", "GET BITMAP: " + (System.currentTimeMillis() - start1) + "ms");
-
-        //==========================================================================================
-
-        long start2 = System.currentTimeMillis();
-        int[] pixels = new int[bitmap.getWidth() * bitmap.getHeight()];
-        bitmap.getPixels(pixels, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
-        Image cameraImage = new Image(bitmap.getWidth(), bitmap.getHeight(), pixels);
-        Log.d("DEBUG_TIME", "GET IMAGE: " + (System.currentTimeMillis() - start2) + "ms");
-
-        //==========================================================================================
-
-        long start3 = System.currentTimeMillis();
-        Image binarizedImage = cameraImage.binarize();
-        Log.d("DEBUG_TIME", "BINARIZING IMAGE: " + (System.currentTimeMillis() - start3) + "ms");
-
-        //==========================================================================================
-
-        long start4 = System.currentTimeMillis();
-        int[] colors = new int[binarizedImage.width * binarizedImage.height];
-
-        for (int x = 0; x < binarizedImage.width; x++)
-        {
-            for (int y = 0; y < binarizedImage.height; y++)
-            {
-                Pixel pixel = binarizedImage.pixel(x, y);
-                colors[x + (y * binarizedImage.width)] = pixel.value;
-            }
-        }
-
-        Bitmap binarizedBitmap = Bitmap.createBitmap(colors, bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
-        Log.d("DEBUG_TIME", "GETTING BINARIZED BITMAP: " + (System.currentTimeMillis() - start4) + "ms");
-
-        //==========================================================================================
-
-        runOnUiThread(() -> binarized.setImageBitmap(binarizedBitmap));
-
-        //List<Symbol> symbols = cameraImage.symbols();
-
-        //for (Symbol symbol : symbols)
-        //{
-        //    Image symbolImage = symbol.image();
-        //    System.out.println(symbolImage);
-        //}
-
-        imageProxy.close();
-
-        Log.d("DEBUG_TIME", imageProxy.toString() + " => END => " + (System.currentTimeMillis() - start) + "ms");*/
-    }
-
     private Bitmap bitmap(ImageProxy imageProxy)
     {
         PlaneProxy[] planes = imageProxy.getPlanes();
@@ -279,12 +212,10 @@ public class MainActivity extends AppCompatActivity implements Analyzer
 
         Matrix matrix = new Matrix();
         matrix.postRotate(imageProxy.getImageInfo().getRotationDegrees());
-        Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
 
         //bitmap.recycle();
-        //rotatedBitmap.recycle();
 
-        return rotatedBitmap;
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
     }
 
     private void saveFile(ImageProxy imageProxy, Bitmap bitmap)
