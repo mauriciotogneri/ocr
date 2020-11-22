@@ -17,10 +17,13 @@ import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.util.Size;
+import android.widget.ImageView;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.mauriciotogneri.ocr.Image;
+import com.mauriciotogneri.ocr.Pixel;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -45,6 +48,7 @@ import androidx.core.content.ContextCompat;
 // https://developers.google.com/ml-kit/language/translation/android
 public class MainActivity extends AppCompatActivity implements Analyzer
 {
+    private ImageView binarized;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private File downloads;
 
@@ -56,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements Analyzer
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
 
+        binarized = findViewById(R.id.binarized);
         downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
 
         if (cameraPermissionGranted())
@@ -102,23 +107,58 @@ public class MainActivity extends AppCompatActivity implements Analyzer
     @SuppressLint("UnsafeExperimentalUsageError")
     public void analyze(@NonNull ImageProxy imageProxy)
     {
+        long start = System.currentTimeMillis();
+        Log.d("DEBUG_TIME", imageProxy.toString() + " => START");
+
+        long start1 = System.currentTimeMillis();
         Bitmap bitmap = bitmap(imageProxy);
+        Log.d("DEBUG_TIME", "GET BITMAP: " + (System.currentTimeMillis() - start1) + "ms");
         //saveFile(imageProxy, bitmap);
 
-        int[][] pixels = new int[bitmap.getWidth()][bitmap.getHeight()];
+        //==========================================================================================
 
-        for (int x = 0; x < bitmap.getWidth(); x++)
+        long start2 = System.currentTimeMillis();
+        int[][] pixels = new int[bitmap.getWidth()][bitmap.getHeight()];
+        int[] aaa = new int[bitmap.getWidth() * bitmap.getHeight()];
+        bitmap.getPixels(aaa, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
+
+        /*for (int x = 0; x < bitmap.getWidth(); x++)
         {
             for (int y = 0; y < bitmap.getHeight(); y++)
             {
                 pixels[x][y] = bitmap.getPixel(x, y);
             }
-        }
+        }*/
 
         Image cameraImage = new Image(bitmap.getWidth(), bitmap.getHeight(), pixels);
-        Image binarizedImage = cameraImage.binarize();
+        Log.d("DEBUG_TIME", "GET IMAGE: " + (System.currentTimeMillis() - start2) + "ms");
 
-        
+        //==========================================================================================
+
+        long start3 = System.currentTimeMillis();
+        Image binarizedImage = cameraImage.binarize();
+        Log.d("DEBUG_TIME", "BINARIZING IMAGE: " + (System.currentTimeMillis() - start3) + "ms");
+
+        //==========================================================================================
+
+        long start4 = System.currentTimeMillis();
+        int[] colors = new int[binarizedImage.width * binarizedImage.height];
+
+        for (int x = 0; x < binarizedImage.width; x++)
+        {
+            for (int y = 0; y < binarizedImage.height; y++)
+            {
+                Pixel pixel = binarizedImage.pixel(x, y);
+                colors[x + (y * binarizedImage.width)] = pixel.value;
+            }
+        }
+
+        Bitmap binarizedBitmap = Bitmap.createBitmap(colors, bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+        Log.d("DEBUG_TIME", "GETTING BINARIZED BITMAP: " + (System.currentTimeMillis() - start4) + "ms");
+
+        //==========================================================================================
+
+        runOnUiThread(() -> binarized.setImageBitmap(binarizedBitmap));
 
         /*List<Symbol> symbols = cameraImage.symbols();
 
@@ -129,6 +169,8 @@ public class MainActivity extends AppCompatActivity implements Analyzer
         }*/
 
         imageProxy.close();
+
+        Log.d("DEBUG_TIME", imageProxy.toString() + " => END => " + (System.currentTimeMillis() - start) + "ms");
     }
 
     private Bitmap bitmap(ImageProxy imageProxy)

@@ -18,13 +18,13 @@ public class ImageFile
 
         int width = image.getWidth();
         int height = image.getHeight();
-        int[][] pixels = new int[width][height];
+        int[] pixels = new int[width * height];
 
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
-                pixels[x][y] = image.getRGB(x, y);
+                pixels[x + (y * width)] = image.getRGB(x, y);
             }
         }
 

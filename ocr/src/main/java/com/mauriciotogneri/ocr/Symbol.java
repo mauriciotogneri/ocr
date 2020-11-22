@@ -26,7 +26,7 @@ public class Symbol
 
     public Image image()
     {
-        int[][] pixels = new int[width][height];
+        int[] pixels = new int[width * height];
 
         for (int x = 0; x < width; x++)
         {
@@ -44,7 +44,7 @@ public class Symbol
                     pixel = new Pixel(255, 255, 255, 255);
                 }
 
-                pixels[x][y] = pixel.value;
+                pixels[x + (y * width)] = pixel.value;
             }
         }
 
@@ -84,11 +84,13 @@ public class Symbol
         int width = maxX - minX + 1;
         int height = maxY - minY + 1;
 
-        boolean[][] data = new boolean[width][height];
+        boolean[] data = new boolean[width * height];
 
         for (Position position : positions)
         {
-            data[position.x - minX][position.y - minY] = true;
+            int x = position.x - minX;
+            int y = position.y - minY;
+            data[x + (y * width)] = true;
         }
 
         return new Symbol(minX, minY, new Matrix(width, height, data));
