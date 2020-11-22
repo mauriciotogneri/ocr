@@ -117,7 +117,9 @@ public class MainActivity extends AppCompatActivity implements Analyzer
             {
                 ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
 
-                Preview preview = new Preview.Builder().build();
+                Preview preview = new Preview.Builder()
+                        .setTargetAspectRatio(AspectRatio.RATIO_16_9)
+                        .build();
                 PreviewView previewView = findViewById(R.id.preview);
                 preview.setSurfaceProvider(previewView.getSurfaceProvider());
 
