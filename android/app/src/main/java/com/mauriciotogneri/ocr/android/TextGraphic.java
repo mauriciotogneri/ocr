@@ -57,18 +57,49 @@ public class TextGraphic extends Graphic
                 canvas.drawRect(newRect, rectPaint);
             }
 
-            List<String> linesOfText = new ArrayList<>(Arrays.asList(block.translatedText.split(" ")));
-            int lines = block.lines.size();
+            List<String> remainingText = new ArrayList<>(Arrays.asList(block.translatedText.split(" ")));
+            int linesCount = block.lines.size();
 
-            for (int i = 0; i < lines; i++)
+            for (int i = 0; i < linesCount; i++)
             {
                 Line line = block.lines.get(i);
-                RectF rect = fromBoundingBox(line.getBoundingBox());
 
-                float textSize = (rect.bottom - rect.top);
+                RectF rect = fromBoundingBox(line.getBoundingBox());
+                canvas.drawRect(rect, rectPaint);
+
+                float textSize = (rect.bottom - rect.top) * 0.8f;
                 textPaint.setTextSize(textSize);
 
-                canvas.drawText(linesOfText.get(i), rect.left, rect.top + textSize, textPaint);
+                StringBuilder currentLine = new StringBuilder();
+
+                if (i < (linesCount - 1))
+                {
+                    while (((currentLine.length() * (textSize / 2.2f)) < rect.width()) && !remainingText.isEmpty())
+                    {
+                        String firstWord = remainingText.get(0);
+
+                        if (((currentLine.length() + firstWord.length()) * (textSize / 2.2f)) < rect.width())
+                        {
+                            remainingText.remove(0);
+                            currentLine.append(firstWord);
+                            currentLine.append(" ");
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    for (String element : remainingText)
+                    {
+                        currentLine.append(element);
+                        currentLine.append(" ");
+                    }
+                }
+
+                canvas.drawText(currentLine.toString().trim(), rect.left, rect.top + textSize, textPaint);
             }
 
             /*RectF rect = fromBoundingBox(block.getBoundingBox());
