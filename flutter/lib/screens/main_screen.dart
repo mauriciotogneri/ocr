@@ -16,6 +16,8 @@ class _MainScreenState extends State<MainScreen> {
   bool _cameraInitialized = false;
   bool _isDetecting = false;
   String detectedText = 'YOLO';
+  final TextRecognizer textRecognizer =
+      FirebaseVision.instance.textRecognizer();
 
   @override
   void initState() {
@@ -25,7 +27,7 @@ class _MainScreenState extends State<MainScreen> {
 
   Future _initializeCamera() async {
     final List<CameraDescription> cameras = await availableCameras();
-    _camera = CameraController(cameras[0], ResolutionPreset.veryHigh);
+    _camera = CameraController(cameras[0], ResolutionPreset.low);
     await _camera.initialize();
     await _camera.startImageStream(_processCameraImage);
     setState(() {
@@ -48,8 +50,6 @@ class _MainScreenState extends State<MainScreen> {
       concatenatePlanes(image.planes),
       buildMetaData(image, rotation),
     );
-    final TextRecognizer textRecognizer =
-        FirebaseVision.instance.textRecognizer();
     final VisionText readText = await textRecognizer.processImage(visionImage);
 
     String result = '';
