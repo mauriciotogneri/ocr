@@ -1,4 +1,5 @@
 import 'package:camera/camera.dart';
+import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/material.dart';
 
 class MainScreen extends StatefulWidget {
@@ -29,7 +30,19 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future _processCameraImage(CameraImage image) async {
-    print(image);
+    final FirebaseVisionImage visionImage =
+        FirebaseVisionImage.fromBytes(image.planes[0].bytes, null);
+    final TextRecognizer recognizeText =
+        FirebaseVision.instance.textRecognizer();
+    final VisionText readText = await recognizeText.processImage(visionImage);
+    String result = '';
+    for (final TextBlock block in readText.blocks) {
+      for (final TextLine line in block.lines) {
+        result += '$result ${line.text}\n';
+      }
+    }
+
+    print(result);
   }
 
   @override
