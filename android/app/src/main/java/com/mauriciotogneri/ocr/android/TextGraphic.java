@@ -11,6 +11,8 @@ import com.google.mlkit.vision.text.Text.Line;
 import com.google.mlkit.vision.text.Text.TextBlock;
 import com.mauriciotogneri.ocr.android.GraphicOverlay.Graphic;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static java.lang.Math.max;
@@ -46,15 +48,36 @@ public class TextGraphic extends Graphic
             for (Line line : block.getLines())
             {
                 RectF rect = fromBoundingBox(line.getBoundingBox());
-                canvas.drawRect(rect, rectPaint);
+
+                float extra = rect.height() * 0.2f;
+                RectF newRect = new RectF(rect.left - extra,
+                                          rect.top - extra,
+                                          rect.right + extra,
+                                          rect.bottom + extra);
+                canvas.drawRect(newRect, rectPaint);
             }
 
-            RectF rect = fromBoundingBox(block.getBoundingBox());
+            List<String> linesOfText = new ArrayList<>(Arrays.asList(block.getText().trim().split("\n")));
+            int lines = block.getLines().size();
+
+            for (int i = 0; i < lines; i++)
+            {
+                Line line = block.getLines().get(i);
+
+                RectF rect = fromBoundingBox(line.getBoundingBox());
+
+                float textSize = (rect.bottom - rect.top);
+                textPaint.setTextSize(textSize);
+
+                canvas.drawText(linesOfText.get(i), rect.left, rect.top + textSize, textPaint);
+            }
+
+            /*RectF rect = fromBoundingBox(block.getBoundingBox());
 
             float textSize = (rect.bottom - rect.top) / block.getLines().size() * 0.9f;
             textPaint.setTextSize(textSize);
 
-            canvas.drawText(block.getText(), rect.left, rect.top + (textSize * 0.9f), textPaint);
+            canvas.drawText(block.getText(), rect.left, rect.top + (textSize * 0.9f), textPaint);*/
         }
     }
 
