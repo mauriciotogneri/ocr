@@ -1,10 +1,8 @@
 package com.mauriciotogneri.ocr;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -33,7 +31,7 @@ public class Image
 
     public Image binarize()
     {
-        int sum = 0;
+        /*int sum = 0;
         Map<Integer, Integer> map = new HashMap<>();
 
         for (int x = 0; x < width; x++)
@@ -65,9 +63,9 @@ public class Image
             builder.append("\n");
         }
 
-        int average = sum / (width * height);
+        int average = sum / (width * height);*/
 
-        return transform(pixel -> pixel.binarize(165));
+        return transform(pixel -> pixel.binarize(127));
     }
 
     public Image transform(Pixel.Transform transform)

@@ -7,12 +7,8 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.ColorMatrix;
-import android.graphics.ColorMatrixColorFilter;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
-import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.os.Bundle;
@@ -87,6 +83,7 @@ public class MainActivity extends AppCompatActivity implements Analyzer
 
                 ImageAnalysis imageAnalyzer = new ImageAnalysis.Builder()
                         .setTargetResolution(new Size(previewView.getWidth(), previewView.getHeight()))
+                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                         .build();
                 imageAnalyzer.setAnalyzer(executor, this);
 
@@ -113,23 +110,12 @@ public class MainActivity extends AppCompatActivity implements Analyzer
         long start1 = System.currentTimeMillis();
         Bitmap bitmap = bitmap(imageProxy);
         Log.d("DEBUG_TIME", "GET BITMAP: " + (System.currentTimeMillis() - start1) + "ms");
-        //saveFile(imageProxy, bitmap);
 
         //==========================================================================================
 
         long start2 = System.currentTimeMillis();
-        int[][] pixels = new int[bitmap.getWidth()][bitmap.getHeight()];
-        int[] aaa = new int[bitmap.getWidth() * bitmap.getHeight()];
-        bitmap.getPixels(aaa, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
-
-        /*for (int x = 0; x < bitmap.getWidth(); x++)
-        {
-            for (int y = 0; y < bitmap.getHeight(); y++)
-            {
-                pixels[x][y] = bitmap.getPixel(x, y);
-            }
-        }*/
-
+        int[] pixels = new int[bitmap.getWidth() * bitmap.getHeight()];
+        bitmap.getPixels(pixels, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
         Image cameraImage = new Image(bitmap.getWidth(), bitmap.getHeight(), pixels);
         Log.d("DEBUG_TIME", "GET IMAGE: " + (System.currentTimeMillis() - start2) + "ms");
 
@@ -200,19 +186,10 @@ public class MainActivity extends AppCompatActivity implements Analyzer
         matrix.postRotate(imageProxy.getImageInfo().getRotationDegrees());
         Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
 
-        Bitmap grayScaleBitmap = Bitmap.createBitmap(rotatedBitmap.getWidth(), rotatedBitmap.getHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(grayScaleBitmap);
-        Paint paint = new Paint();
-        ColorMatrix colorMatrix = new ColorMatrix();
-        colorMatrix.setSaturation(0f);
-        ColorMatrixColorFilter colorMatrixColorFilter = new ColorMatrixColorFilter(colorMatrix);
-        paint.setColorFilter(colorMatrixColorFilter);
-        canvas.drawBitmap(rotatedBitmap, 0, 0, paint);
+        //bitmap.recycle();
+        //rotatedBitmap.recycle();
 
-        bitmap.recycle();
-        rotatedBitmap.recycle();
-
-        return grayScaleBitmap;
+        return rotatedBitmap;
     }
 
     private void saveFile(ImageProxy imageProxy, Bitmap bitmap)
