@@ -12,8 +12,11 @@ import com.google.mlkit.nl.translate.Translator;
 import com.google.mlkit.nl.translate.TranslatorOptions;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.text.Text;
+import com.google.mlkit.vision.text.Text.Line;
 import com.google.mlkit.vision.text.TextRecognition;
 import com.google.mlkit.vision.text.TextRecognizer;
+
+import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.camera.core.ImageAnalysis.Analyzer;
@@ -22,7 +25,7 @@ import androidx.camera.core.ImageProxy;
 public class MainActivity extends CameraActivity implements Analyzer
 {
     private GraphicOverlay overlay;
-    private Translator englishSpanishTranslator;
+    private Translator frenchSpanishTranslator;
     private final TextRecognizer textRecognizer = TextRecognition.getClient();
 
     @Override
@@ -38,7 +41,7 @@ public class MainActivity extends CameraActivity implements Analyzer
                 .setTargetLanguage(TranslateLanguage.SPANISH)
                 .build();
 
-        englishSpanishTranslator = Translation.getClient(options);
+        frenchSpanishTranslator = Translation.getClient(options);
 
         downloadModel(TranslateLanguage.SPANISH, task1 -> {
             downloadModel(TranslateLanguage.FRENCH, task2 -> {
@@ -68,21 +71,75 @@ public class MainActivity extends CameraActivity implements Analyzer
 
     private void analyzeText(InputImage image, Text text)
     {
-        overlay.setImageSourceInfo(image.getWidth(), image.getHeight(), false);
-        overlay.clear();
+        TextTranslator translator = new TextTranslator(overlay, frenchSpanishTranslator, image, text);
+        translator.translate();
+    }
 
-        for (Text.TextBlock block : text.getTextBlocks())
+    public static class TextTranslator
+    {
+        private final GraphicOverlay overlay;
+        private final Translator translator;
+        private final InputImage image;
+        private final Text text;
+        private final TranslatedBlock[] translatedBlocks;
+        private int translatedCount = 0;
+
+        public TextTranslator(GraphicOverlay overlay, Translator translator, InputImage image, Text text)
         {
-            for (Text.Line line : block.getLines())
+            this.overlay = overlay;
+            this.translator = translator;
+            this.image = image;
+            this.text = text;
+            this.translatedBlocks = new TranslatedBlock[text.getTextBlocks().size()];
+        }
+
+        public void translate()
+        {
+            int limit = text.getTextBlocks().size();
+
+            for (int i = 0; i < limit; i++)
             {
+                final int index = i;
+                Text.TextBlock block = text.getTextBlocks().get(i);
+
+                translatedBlocks[i] = new TranslatedBlock(block.getLines());
+
+                translator.translate(block.getText())
+                        .addOnSuccessListener(textTranslated -> {
+                            translatedBlocks[index].translatedText(textTranslated.trim());
+                            translatedCount++;
+
+                            if (translatedCount == translatedBlocks.length)
+                            {
+                                onDone();
+                            }
+                        })
+                        .addOnFailureListener(Throwable::printStackTrace);
             }
         }
 
-        overlay.add(new TextGraphic(overlay, text.getTextBlocks()));
+        public void onDone()
+        {
+            overlay.setImageSourceInfo(image.getWidth(), image.getHeight(), false);
+            overlay.clear();
 
-        /*englishSpanishTranslator
-                .translate(resultText)
-                .addOnSuccessListener(translatedText -> textView.setText(translatedText))
-                .addOnFailureListener(Throwable::printStackTrace);*/
+            overlay.add(new TextGraphic(overlay, translatedBlocks));
+        }
+    }
+
+    public static class TranslatedBlock
+    {
+        public String translatedText;
+        public final List<Line> lines;
+
+        public TranslatedBlock(List<Line> lines)
+        {
+            this.lines = lines;
+        }
+
+        public void translatedText(String translatedText)
+        {
+            this.translatedText = translatedText;
+        }
     }
 }

@@ -8,8 +8,8 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 
 import com.google.mlkit.vision.text.Text.Line;
-import com.google.mlkit.vision.text.Text.TextBlock;
 import com.mauriciotogneri.ocr.android.GraphicOverlay.Graphic;
+import com.mauriciotogneri.ocr.android.MainActivity.TranslatedBlock;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,13 +22,13 @@ public class TextGraphic extends Graphic
 {
     private final Paint rectPaint;
     private final Paint textPaint;
-    private final List<TextBlock> blocks;
+    private final TranslatedBlock[] translatedBlocks;
 
-    public TextGraphic(GraphicOverlay overlay, List<TextBlock> blocks)
+    public TextGraphic(GraphicOverlay overlay, TranslatedBlock[] translatedBlocks)
     {
         super(overlay);
 
-        this.blocks = blocks;
+        this.translatedBlocks = translatedBlocks;
 
         this.rectPaint = new Paint();
         this.rectPaint.setColor(Color.WHITE);
@@ -43,9 +43,9 @@ public class TextGraphic extends Graphic
     @Override
     public void draw(Canvas canvas)
     {
-        for (TextBlock block : blocks)
+        for (TranslatedBlock block : translatedBlocks)
         {
-            for (Line line : block.getLines())
+            for (Line line : block.lines)
             {
                 RectF rect = fromBoundingBox(line.getBoundingBox());
 
@@ -57,13 +57,12 @@ public class TextGraphic extends Graphic
                 canvas.drawRect(newRect, rectPaint);
             }
 
-            List<String> linesOfText = new ArrayList<>(Arrays.asList(block.getText().trim().split("\n")));
-            int lines = block.getLines().size();
+            List<String> linesOfText = new ArrayList<>(Arrays.asList(block.translatedText.split(" ")));
+            int lines = block.lines.size();
 
             for (int i = 0; i < lines; i++)
             {
-                Line line = block.getLines().get(i);
-
+                Line line = block.lines.get(i);
                 RectF rect = fromBoundingBox(line.getBoundingBox());
 
                 float textSize = (rect.bottom - rect.top);
