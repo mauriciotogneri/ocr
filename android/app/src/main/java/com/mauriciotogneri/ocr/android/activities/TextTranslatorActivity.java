@@ -1,4 +1,4 @@
-package com.mauriciotogneri.ocr.android;
+package com.mauriciotogneri.ocr.android.activities;
 
 import android.os.Bundle;
 
@@ -14,7 +14,10 @@ import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.text.Text;
 import com.google.mlkit.vision.text.TextRecognition;
 import com.google.mlkit.vision.text.TextRecognizer;
-import com.mauriciotogneri.ocr.android.TextGraphic.TranslatedBlock;
+import com.mauriciotogneri.ocr.android.R;
+import com.mauriciotogneri.ocr.android.graphic.GraphicOverlay;
+import com.mauriciotogneri.ocr.android.graphic.TextGraphic;
+import com.mauriciotogneri.ocr.android.graphic.TextGraphic.TranslatedBlock;
 
 import androidx.annotation.NonNull;
 import androidx.camera.core.ImageAnalysis.Analyzer;

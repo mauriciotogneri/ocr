@@ -1,4 +1,4 @@
-package com.mauriciotogneri.ocr.android;
+package com.mauriciotogneri.ocr.android.graphic;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -8,7 +8,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 
 import com.google.mlkit.vision.text.Text.Line;
-import com.mauriciotogneri.ocr.android.GraphicOverlay.Graphic;
+import com.mauriciotogneri.ocr.android.graphic.GraphicOverlay.Graphic;
 
 import java.util.ArrayList;
 import java.util.Arrays;

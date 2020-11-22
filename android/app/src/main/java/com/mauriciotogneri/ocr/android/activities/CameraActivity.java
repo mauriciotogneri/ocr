@@ -1,4 +1,4 @@
-package com.mauriciotogneri.ocr.android;
+package com.mauriciotogneri.ocr.android.activities;
 
 import android.Manifest;
 import android.Manifest.permission;
@@ -14,6 +14,7 @@ import android.media.Image;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mlkit.vision.common.InputImage;
+import com.mauriciotogneri.ocr.android.R;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;

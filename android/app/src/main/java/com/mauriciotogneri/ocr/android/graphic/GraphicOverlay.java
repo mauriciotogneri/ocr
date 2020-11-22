@@ -1,4 +1,4 @@
-package com.mauriciotogneri.ocr.android;
+package com.mauriciotogneri.ocr.android.graphic;
 
 import android.content.Context;
 import android.graphics.Canvas;

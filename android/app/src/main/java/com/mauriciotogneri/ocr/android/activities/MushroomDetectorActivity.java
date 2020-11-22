@@ -1,4 +1,4 @@
-package com.mauriciotogneri.ocr.android;
+package com.mauriciotogneri.ocr.android.activities;
 
 // https://tfhub.dev/bohemian-visual-recognition-alliance/lite-model/models/mushroom-identification_v1/1
 // https://tfhub.dev/svampeatlas/vision/embedder/fungi_V2/1

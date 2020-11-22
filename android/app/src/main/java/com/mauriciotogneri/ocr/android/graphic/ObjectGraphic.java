@@ -1,4 +1,4 @@
-package com.mauriciotogneri.ocr.android;
+package com.mauriciotogneri.ocr.android.graphic;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -8,7 +8,7 @@ import android.util.Log;
 
 import com.google.mlkit.vision.objects.DetectedObject;
 import com.google.mlkit.vision.objects.DetectedObject.Label;
-import com.mauriciotogneri.ocr.android.GraphicOverlay.Graphic;
+import com.mauriciotogneri.ocr.android.graphic.GraphicOverlay.Graphic;
 
 import java.util.Locale;
 
