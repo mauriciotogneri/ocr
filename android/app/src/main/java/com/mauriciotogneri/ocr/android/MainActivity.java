@@ -161,8 +161,6 @@ public class MainActivity extends AppCompatActivity implements Analyzer
 
     private void analyzeText(InputImage image, Text text)
     {
-        String resultText = text.getText();
-
         overlay.setImageSourceInfo(image.getWidth(), image.getHeight(), false);
         overlay.clear();
 
@@ -170,11 +168,10 @@ public class MainActivity extends AppCompatActivity implements Analyzer
         {
             for (Text.Line line : block.getLines())
             {
-                resultText += line.getText() + "\n";
             }
         }
 
-        overlay.add(new TextGraphic(overlay, text));
+        overlay.add(new TextGraphic(overlay, text.getTextBlocks()));
 
         /*englishSpanishTranslator
                 .translate(resultText)
