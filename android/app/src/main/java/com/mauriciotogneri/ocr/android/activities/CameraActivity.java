@@ -102,7 +102,7 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
 
     public abstract void analyze(@NonNull ImageProxy imageProxy, @NonNull InputImage image);
 
-    protected Bitmap bitmap(ImageProxy imageProxy)
+    protected Bitmap bitmap(@NonNull ImageProxy imageProxy)
     {
         PlaneProxy[] planes = imageProxy.getPlanes();
         ByteBuffer yBuffer = planes[0].getBuffer();
