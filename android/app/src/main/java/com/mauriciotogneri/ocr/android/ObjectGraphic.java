@@ -4,6 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.util.Log;
 
 import com.google.mlkit.vision.objects.DetectedObject;
 import com.google.mlkit.vision.objects.DetectedObject.Label;
@@ -11,18 +12,13 @@ import com.mauriciotogneri.ocr.android.GraphicOverlay.Graphic;
 
 import java.util.Locale;
 
-/**
- * Draw the detected object info in preview.
- */
 public class ObjectGraphic extends Graphic
 {
-
     private static final float TEXT_SIZE = 54.0f;
     private static final float STROKE_WIDTH = 4.0f;
     private static final int NUM_COLORS = 10;
     private static final int[][] COLORS =
             new int[][] {
-                    // {Text color, background color}
                     {Color.BLACK, Color.WHITE},
                     {Color.WHITE, Color.MAGENTA},
                     {Color.BLACK, Color.LTGRAY},
@@ -34,14 +30,14 @@ public class ObjectGraphic extends Graphic
                     {Color.WHITE, Color.BLACK},
                     {Color.BLACK, Color.GREEN}
             };
-    private static final String LABEL_FORMAT = "%.2f%% confidence (index: %d)";
+    private static final String LABEL_FORMAT = "%.2f%%";
 
     private final DetectedObject object;
     private final Paint[] boxPaints;
     private final Paint[] textPaints;
     private final Paint[] labelPaints;
 
-    ObjectGraphic(GraphicOverlay overlay, DetectedObject object)
+    public ObjectGraphic(GraphicOverlay overlay, DetectedObject object)
     {
         super(overlay);
 
@@ -87,8 +83,10 @@ public class ObjectGraphic extends Graphic
                             textWidth,
                             textPaints[colorID].measureText(
                                     String.format(
-                                            Locale.US, LABEL_FORMAT, label.getConfidence() * 100, label.getIndex())));
+                                            Locale.US, LABEL_FORMAT, label.getConfidence() * 100)));
             yLabelOffset -= 2 * lineHeight;
+
+            Log.d("DETECTED_OBJECT", label.getText());
         }
 
         // Draws the bounding box.
@@ -110,19 +108,19 @@ public class ObjectGraphic extends Graphic
                 rect.top,
                 labelPaints[colorID]);
         yLabelOffset += TEXT_SIZE;
-        canvas.drawText(
+        /*canvas.drawText(
                 "Tracking ID: " + object.getTrackingId(),
                 rect.left,
                 rect.top + yLabelOffset,
-                textPaints[colorID]);
-        yLabelOffset += lineHeight;
+                textPaints[colorID]);*/
+        //yLabelOffset += lineHeight;
 
         for (Label label : object.getLabels())
         {
             canvas.drawText(label.getText(), rect.left, rect.top + yLabelOffset, textPaints[colorID]);
             yLabelOffset += lineHeight;
             canvas.drawText(
-                    String.format(Locale.US, LABEL_FORMAT, label.getConfidence() * 100, label.getIndex()),
+                    String.format(Locale.US, LABEL_FORMAT, label.getConfidence() * 100),
                     rect.left,
                     rect.top + yLabelOffset,
                     textPaints[colorID]);
