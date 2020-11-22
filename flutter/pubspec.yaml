@@ -1,0 +1,27 @@
+name: real_time_translator
+description: A Flutter app to translate text in real time
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.10.0 <3.0.0"
+
+dependencies:
+  dafluta: ^2.6.0
+
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  dapackages: ^1.4.0
+  flutter_launcher_icons: ^0.8.1
+
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/launcher/launcher.png"
