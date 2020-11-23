@@ -10,7 +10,6 @@ import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
-import android.media.Image;
 import android.os.Environment;
 
 import com.google.common.util.concurrent.ListenableFuture;
@@ -101,42 +100,18 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
         String timestamp = dateTime.toString("dd-MM-yyyy HH:mm:ss");
         File file = new File(downloads, String.format("%s - %s.jpg", timestamp, ""));
         saveFile(bitmap, file);
+        imageProxy.close();
 
-        Image mediaImage = imageProxy.getImage();
+        /*Image mediaImage = imageProxy.getImage();
 
         if (mediaImage != null)
         {
             InputImage image = InputImage.fromMediaImage(mediaImage, imageProxy.getImageInfo().getRotationDegrees());
             analyze(imageProxy, image);
-        }
+        }*/
     }
 
     public abstract void analyze(@NonNull ImageProxy imageProxy, @NonNull InputImage image);
-
-    private Bitmap bitmap2(ImageProxy imageProxy)
-    {
-        PlaneProxy[] planes = imageProxy.getPlanes();
-        ByteBuffer yBuffer = planes[0].getBuffer(); // Y
-        ByteBuffer uBuffer = planes[1].getBuffer(); // U
-        ByteBuffer vBuffer = planes[2].getBuffer(); // V
-
-        int ySize = yBuffer.remaining();
-        int uSize = uBuffer.remaining();
-        int vSize = vBuffer.remaining();
-
-        byte[] nv21 = new byte[ySize + uSize + vSize];
-
-        yBuffer.get(nv21, 0, ySize);
-        vBuffer.get(nv21, ySize, vSize);
-        uBuffer.get(nv21, ySize + vSize, uSize);
-
-        YuvImage yuvImage = new YuvImage(nv21, ImageFormat.NV21, imageProxy.getWidth(), imageProxy.getHeight(), null);
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        yuvImage.compressToJpeg(new Rect(0, 0, yuvImage.getWidth(), yuvImage.getHeight()), 100, out);
-        byte[] imageBytes = out.toByteArray();
-
-        return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
-    }
 
     protected Bitmap bitmap(@NonNull ImageProxy imageProxy)
     {

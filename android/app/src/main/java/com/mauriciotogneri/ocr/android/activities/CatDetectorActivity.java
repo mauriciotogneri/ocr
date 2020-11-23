@@ -75,7 +75,7 @@ public class CatDetectorActivity extends CameraActivity implements Analyzer
             String keys = keys(filtered);
             File file = new File(downloads, String.format("%s - %s.jpg", timestamp, keys));
 
-            saveFile(bitmap, file);
+            //saveFile(bitmap, file);
         }
 
         overlay.clear();
