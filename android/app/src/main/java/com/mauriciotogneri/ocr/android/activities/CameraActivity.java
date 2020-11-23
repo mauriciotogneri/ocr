@@ -1,10 +1,10 @@
 package com.mauriciotogneri.ocr.android.activities;
 
-import android.Manifest;
 import android.Manifest.permission;
 import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
@@ -17,6 +17,8 @@ import com.google.mlkit.vision.common.InputImage;
 import com.mauriciotogneri.ocr.android.R;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -39,17 +41,17 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
 {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    private static final int REQUEST_CAMERA_PERMISSION = 10;
+    private static final int REQUEST_PERMISSIONS = 10;
 
     protected void checkCamera()
     {
-        if (cameraPermissionGranted())
+        if (permissionsGranted())
         {
             startCamera();
         }
         else
         {
-            ActivityCompat.requestPermissions(this, new String[] {permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
+            ActivityCompat.requestPermissions(this, new String[] {permission.CAMERA, permission.WRITE_EXTERNAL_STORAGE}, REQUEST_PERMISSIONS);
         }
     }
 
@@ -133,11 +135,10 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
     }
 
-    /*private void saveFile(ImageProxy imageProxy, Bitmap bitmap)
+    protected void saveFile(Bitmap bitmap, File file)
     {
         try
         {
-            File file = new File(downloads, String.format("%s.jpg", imageProxy.getImageInfo().getTimestamp()));
             FileOutputStream outStream = new FileOutputStream(file);
             bitmap.compress(CompressFormat.JPEG, 100, outStream);
         }
@@ -145,25 +146,23 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
         {
             e.printStackTrace();
         }
-    }*/
+    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
     {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        if (requestCode == REQUEST_CAMERA_PERMISSION)
+        if ((requestCode == REQUEST_PERMISSIONS) && permissionsGranted())
         {
-            if (cameraPermissionGranted())
-            {
-                startCamera();
-            }
+            startCamera();
         }
     }
 
-    private boolean cameraPermissionGranted()
+    private boolean permissionsGranted()
     {
-        return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
+        return (ContextCompat.checkSelfPermission(this, permission.CAMERA) == PackageManager.PERMISSION_GRANTED) &&
+                (ContextCompat.checkSelfPermission(this, permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
     }
 
     @Override

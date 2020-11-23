@@ -1,7 +1,9 @@
 package com.mauriciotogneri.ocr.android.activities;
 
+import android.graphics.Bitmap;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Environment;
 
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.label.ImageLabel;
@@ -12,6 +14,9 @@ import com.mauriciotogneri.ocr.android.R;
 import com.mauriciotogneri.ocr.android.graphic.GraphicOverlay;
 import com.mauriciotogneri.ocr.android.graphic.LabelGraphic;
 
+import org.joda.time.DateTime;
+
+import java.io.File;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,6 +28,7 @@ public class CatDetectorActivity extends CameraActivity implements Analyzer
 {
     private ImageLabeler imageLabeler;
     private GraphicOverlay overlay;
+    private File downloads;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -31,6 +37,8 @@ public class CatDetectorActivity extends CameraActivity implements Analyzer
         setContentView(R.layout.cat_detector_activity);
 
         overlay = findViewById(R.id.overlay);
+
+        downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
 
         ImageLabelerOptions options = new ImageLabelerOptions.Builder()
                 .setConfidenceThreshold(0.5f)
@@ -59,6 +67,14 @@ public class CatDetectorActivity extends CameraActivity implements Analyzer
         if (!filtered.isEmpty())
         {
             animalDetected();
+
+            Bitmap bitmap = bitmap(imageProxy);
+            DateTime dateTime = new DateTime(imageProxy.getImageInfo().getTimestamp());
+            String timestamp = dateTime.toString("dd-MM-yyyy HH:mm:ss");
+            String keys = keys(filtered);
+            File file = new File(downloads, String.format("%s - %s.jpg", timestamp, keys));
+
+            saveFile(bitmap, file);
         }
 
         overlay.clear();
@@ -66,11 +82,30 @@ public class CatDetectorActivity extends CameraActivity implements Analyzer
         overlay.setImageSourceInfo(imageProxy.getWidth(), imageProxy.getHeight(), false);
     }
 
-    private boolean isAnimal(ImageLabel imageLabel)
+    private boolean isAnimal(@NonNull ImageLabel imageLabel)
     {
         String label = imageLabel.getText().toLowerCase().trim();
 
         return label.equals("cat") || label.equals("dog");
+    }
+
+    @NonNull
+    private String keys(@NonNull List<ImageLabel> imageLabels)
+    {
+        StringBuilder builder = new StringBuilder();
+
+        for (ImageLabel imageLabel : imageLabels)
+        {
+            if (builder.length() != 0){
+                builder.append("-");
+            }
+
+            builder.append(imageLabel.getText());
+            builder.append("=");
+            builder.append((int)(imageLabel.getConfidence() * 100));
+        }
+
+        return builder.toString();
     }
 
     private void animalDetected()
