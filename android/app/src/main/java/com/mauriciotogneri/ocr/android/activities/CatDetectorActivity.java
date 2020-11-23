@@ -60,14 +60,14 @@ public class CatDetectorActivity extends CameraActivity implements Analyzer
 
     private void objectsDetected(@NonNull ImageProxy imageProxy, @NonNull List<ImageLabel> objects)
     {
-        Bitmap bitmap = bitmap(imageProxy);
-
         List<ImageLabel> filtered = objects.stream()
                 .filter(this::isAnimal)
                 .collect(Collectors.toList());
 
         if (!filtered.isEmpty())
         {
+            Bitmap bitmap = bitmap(imageProxy);
+
             animalDetected();
 
             DateTime dateTime = new DateTime();

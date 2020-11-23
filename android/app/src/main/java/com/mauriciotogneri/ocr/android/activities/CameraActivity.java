@@ -11,11 +11,13 @@ import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.media.Image;
-import android.media.Image.Plane;
+import android.os.Environment;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mlkit.vision.common.InputImage;
 import com.mauriciotogneri.ocr.android.R;
+
+import org.joda.time.DateTime;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -93,15 +95,12 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
     @SuppressLint("UnsafeExperimentalUsageError")
     public void analyze(@NonNull ImageProxy imageProxy)
     {
-        /*Bitmap bitmap = bitmap(imageProxy.getImage(), imageProxy.getImageInfo().getRotationDegrees());
-        InputImage i = InputImage.fromBitmap(bitmap, imageProxy.getImageInfo().getRotationDegrees());
-        analyze(imageProxy, i);
-
+        Bitmap bitmap = bitmap2(imageProxy);
         File downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         DateTime dateTime = new DateTime();
         String timestamp = dateTime.toString("dd-MM-yyyy HH:mm:ss");
         File file = new File(downloads, String.format("%s - %s.jpg", timestamp, ""));
-        saveFile(bitmap, file);*/
+        saveFile(bitmap, file);
 
         Image mediaImage = imageProxy.getImage();
 
@@ -113,6 +112,31 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
     }
 
     public abstract void analyze(@NonNull ImageProxy imageProxy, @NonNull InputImage image);
+
+    private Bitmap bitmap2(ImageProxy imageProxy)
+    {
+        ImageProxy.PlaneProxy[] plane = imageProxy.getPlanes();
+        ByteBuffer yBuffer = plane[0].getBuffer();  // Y
+        ByteBuffer uBuffer = plane[1].getBuffer();  // U
+        ByteBuffer vBuffer = plane[2].getBuffer();  // V
+
+        int ySize = yBuffer.remaining();
+        int uSize = uBuffer.remaining();
+        int vSize = vBuffer.remaining();
+
+        byte[] nv21 = new byte[ySize + uSize + vSize];
+
+        //U and V are swapped
+        yBuffer.get(nv21, 0, ySize);
+        vBuffer.get(nv21, ySize, vSize);
+        uBuffer.get(nv21, ySize + vSize, uSize);
+
+        YuvImage yuvImage = new YuvImage(nv21, ImageFormat.NV21, imageProxy.getWidth(), imageProxy.getHeight(), null);
+        ByteArrayOutputStream stream = new ByteArrayOutputStream(nv21.length);
+        yuvImage.compressToJpeg(new Rect(0, 0, yuvImage.getWidth(), yuvImage.getHeight()), 90, stream);
+
+        return BitmapFactory.decodeByteArray(stream.toByteArray(), 0, stream.size());
+    }
 
     protected Bitmap bitmap(@NonNull ImageProxy imageProxy)
     {
@@ -139,37 +163,6 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
 
         Matrix matrix = new Matrix();
         matrix.postRotate(imageProxy.getImageInfo().getRotationDegrees());
-
-        //bitmap.recycle();
-
-        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-    }
-
-    protected Bitmap bitmap(@NonNull Image image, int rotation)
-    {
-        Plane[] planes = image.getPlanes();
-        ByteBuffer yBuffer = planes[0].getBuffer();
-        ByteBuffer uBuffer = planes[1].getBuffer();
-        ByteBuffer vBuffer = planes[2].getBuffer();
-
-        int ySize = yBuffer.remaining();
-        int uSize = uBuffer.remaining();
-        int vSize = vBuffer.remaining();
-
-        byte[] nv21 = new byte[ySize + uSize + vSize];
-        yBuffer.get(nv21, 0, ySize);
-        vBuffer.get(nv21, ySize, vSize);
-        uBuffer.get(nv21, ySize + vSize, uSize);
-
-        YuvImage yuvImage = new YuvImage(nv21, ImageFormat.NV21, image.getWidth(), image.getHeight(), null);
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        yuvImage.compressToJpeg(new Rect(0, 0, yuvImage.getWidth(), yuvImage.getHeight()), 100, out);
-
-        byte[] imageBytes = out.toByteArray();
-        Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
-
-        Matrix matrix = new Matrix();
-        matrix.postRotate(rotation);
 
         //bitmap.recycle();
 
