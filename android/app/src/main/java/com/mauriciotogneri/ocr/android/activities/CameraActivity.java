@@ -95,7 +95,7 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
     @SuppressLint("UnsafeExperimentalUsageError")
     public void analyze(@NonNull ImageProxy imageProxy)
     {
-        Bitmap bitmap = bitmap2(imageProxy);
+        Bitmap bitmap = bitmap(imageProxy);
         File downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         DateTime dateTime = new DateTime();
         String timestamp = dateTime.toString("dd-MM-yyyy HH:mm:ss");
@@ -115,10 +115,10 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
 
     private Bitmap bitmap2(ImageProxy imageProxy)
     {
-        ImageProxy.PlaneProxy[] plane = imageProxy.getPlanes();
-        ByteBuffer yBuffer = plane[0].getBuffer();  // Y
-        ByteBuffer uBuffer = plane[1].getBuffer();  // U
-        ByteBuffer vBuffer = plane[2].getBuffer();  // V
+        PlaneProxy[] planes = imageProxy.getPlanes();
+        ByteBuffer yBuffer = planes[0].getBuffer(); // Y
+        ByteBuffer uBuffer = planes[1].getBuffer(); // U
+        ByteBuffer vBuffer = planes[2].getBuffer(); // V
 
         int ySize = yBuffer.remaining();
         int uSize = uBuffer.remaining();
@@ -126,16 +126,16 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
 
         byte[] nv21 = new byte[ySize + uSize + vSize];
 
-        //U and V are swapped
         yBuffer.get(nv21, 0, ySize);
         vBuffer.get(nv21, ySize, vSize);
         uBuffer.get(nv21, ySize + vSize, uSize);
 
         YuvImage yuvImage = new YuvImage(nv21, ImageFormat.NV21, imageProxy.getWidth(), imageProxy.getHeight(), null);
-        ByteArrayOutputStream stream = new ByteArrayOutputStream(nv21.length);
-        yuvImage.compressToJpeg(new Rect(0, 0, yuvImage.getWidth(), yuvImage.getHeight()), 90, stream);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        yuvImage.compressToJpeg(new Rect(0, 0, yuvImage.getWidth(), yuvImage.getHeight()), 100, out);
+        byte[] imageBytes = out.toByteArray();
 
-        return BitmapFactory.decodeByteArray(stream.toByteArray(), 0, stream.size());
+        return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
     }
 
     protected Bitmap bitmap(@NonNull ImageProxy imageProxy)
@@ -169,6 +169,17 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
+    {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if ((requestCode == REQUEST_PERMISSIONS) && permissionsGranted())
+        {
+            startCamera();
+        }
+    }
+
     protected void saveFile(Bitmap bitmap, File file)
     {
         try
@@ -179,17 +190,6 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
         catch (Exception e)
         {
             e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
-    {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if ((requestCode == REQUEST_PERMISSIONS) && permissionsGranted())
-        {
-            startCamera();
         }
     }
 
