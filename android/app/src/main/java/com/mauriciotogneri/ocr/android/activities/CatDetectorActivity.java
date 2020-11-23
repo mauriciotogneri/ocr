@@ -1,5 +1,6 @@
 package com.mauriciotogneri.ocr.android.activities;
 
+import android.media.MediaPlayer;
 import android.os.Bundle;
 
 import com.google.mlkit.vision.common.InputImage;
@@ -51,10 +52,30 @@ public class CatDetectorActivity extends CameraActivity implements Analyzer
 
     private void objectsDetected(@NonNull ImageProxy imageProxy, @NonNull List<ImageLabel> objects)
     {
-        List<ImageLabel> cats = objects.stream().filter(imageLabel -> imageLabel.getText().trim().toLowerCase().equals("cat")).collect(Collectors.toList());
+        List<ImageLabel> filtered = objects.stream()
+                .filter(this::isAnimal)
+                .collect(Collectors.toList());
+
+        if (!filtered.isEmpty())
+        {
+            animalDetected();
+        }
 
         overlay.clear();
-        overlay.add(new LabelGraphic(overlay, cats));
+        overlay.add(new LabelGraphic(overlay, filtered));
         overlay.setImageSourceInfo(imageProxy.getWidth(), imageProxy.getHeight(), false);
+    }
+
+    private boolean isAnimal(ImageLabel imageLabel)
+    {
+        String label = imageLabel.getText().toLowerCase().trim();
+
+        return label.equals("cat") || label.equals("dog");
+    }
+
+    private void animalDetected()
+    {
+        MediaPlayer mediaPlayer = MediaPlayer.create(this, R.raw.meow);
+        mediaPlayer.start();
     }
 }
