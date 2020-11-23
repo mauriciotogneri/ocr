@@ -10,13 +10,11 @@ import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
-import android.os.Environment;
+import android.media.Image;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mlkit.vision.common.InputImage;
 import com.mauriciotogneri.ocr.android.R;
-
-import org.joda.time.DateTime;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -31,6 +29,10 @@ import androidx.camera.core.AspectRatio;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageAnalysis.Analyzer;
+import androidx.camera.core.ImageCapture;
+import androidx.camera.core.ImageCapture.OnImageSavedCallback;
+import androidx.camera.core.ImageCapture.OutputFileResults;
+import androidx.camera.core.ImageCaptureException;
 import androidx.camera.core.ImageProxy;
 import androidx.camera.core.ImageProxy.PlaneProxy;
 import androidx.camera.core.Preview;
@@ -41,6 +43,7 @@ import androidx.core.content.ContextCompat;
 
 public abstract class CameraActivity extends AppCompatActivity implements Analyzer
 {
+    private ImageCapture imageCapture;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     private static final int REQUEST_PERMISSIONS = 10;
@@ -71,6 +74,10 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
                 PreviewView previewView = findViewById(R.id.preview);
                 preview.setSurfaceProvider(previewView.getSurfaceProvider());
 
+                imageCapture = new ImageCapture.Builder()
+                        .setTargetRotation(previewView.getDisplay().getRotation())
+                        .build();
+
                 ImageAnalysis imageAnalyzer = new ImageAnalysis.Builder()
                         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                         .setTargetAspectRatio(AspectRatio.RATIO_16_9)
@@ -81,6 +88,7 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
                 cameraProvider.bindToLifecycle(this,
                                                CameraSelector.DEFAULT_BACK_CAMERA,
                                                preview,
+                                               imageCapture,
                                                imageAnalyzer);
             }
             catch (Exception e)
@@ -94,21 +102,21 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
     @SuppressLint("UnsafeExperimentalUsageError")
     public void analyze(@NonNull ImageProxy imageProxy)
     {
-        Bitmap bitmap = bitmap(imageProxy);
+        /*Bitmap bitmap = bitmap(imageProxy);
         File downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         DateTime dateTime = new DateTime();
         String timestamp = dateTime.toString("dd-MM-yyyy HH:mm:ss");
         File file = new File(downloads, String.format("%s - %s.jpg", timestamp, ""));
         saveFile(bitmap, file);
-        imageProxy.close();
+        imageProxy.close();*/
 
-        /*Image mediaImage = imageProxy.getImage();
+        Image mediaImage = imageProxy.getImage();
 
         if (mediaImage != null)
         {
             InputImage image = InputImage.fromMediaImage(mediaImage, imageProxy.getImageInfo().getRotationDegrees());
             analyze(imageProxy, image);
-        }*/
+        }
     }
 
     public abstract void analyze(@NonNull ImageProxy imageProxy, @NonNull InputImage image);
@@ -144,15 +152,24 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
+    protected void takePhoto(File file)
     {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        ImageCapture.OutputFileOptions outputFileOptions = new ImageCapture.OutputFileOptions.Builder(file).build();
 
-        if ((requestCode == REQUEST_PERMISSIONS) && permissionsGranted())
+        imageCapture.takePicture(outputFileOptions, ContextCompat.getMainExecutor(this), new OnImageSavedCallback()
         {
-            startCamera();
-        }
+            @Override
+            public void onImageSaved(@NonNull OutputFileResults outputFileResults)
+            {
+                System.out.println();
+            }
+
+            @Override
+            public void onError(@NonNull ImageCaptureException exception)
+            {
+                System.out.println();
+            }
+        });
     }
 
     protected void saveFile(Bitmap bitmap, File file)
@@ -165,6 +182,17 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
         catch (Exception e)
         {
             e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
+    {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if ((requestCode == REQUEST_PERMISSIONS) && permissionsGranted())
+        {
+            startCamera();
         }
     }
 

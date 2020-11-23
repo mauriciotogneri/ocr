@@ -1,6 +1,5 @@
 package com.mauriciotogneri.ocr.android.activities;
 
-import android.graphics.Bitmap;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Environment;
@@ -66,16 +65,13 @@ public class CatDetectorActivity extends CameraActivity implements Analyzer
 
         if (!filtered.isEmpty())
         {
-            Bitmap bitmap = bitmap(imageProxy);
-
             animalDetected();
 
             DateTime dateTime = new DateTime();
-            String timestamp = dateTime.toString("dd-MM-yyyy HH:mm:ss");
+            String timestamp = dateTime.toString("dd-MM-yyyy HH:mm:ss:SSS");
             String keys = keys(filtered);
-            File file = new File(downloads, String.format("%s - %s.jpg", timestamp, keys));
-
-            //saveFile(bitmap, file);
+            File file = new File(downloads, String.format("%s %s.jpg", timestamp, keys));
+            takePhoto(file);
         }
 
         overlay.clear();
@@ -99,10 +95,10 @@ public class CatDetectorActivity extends CameraActivity implements Analyzer
         {
             if (builder.length() != 0)
             {
-                builder.append("-");
+                builder.append(" ");
             }
 
-            builder.append(imageLabel.getText());
+            builder.append(imageLabel.getText().toLowerCase());
             builder.append("=");
             builder.append((int) (imageLabel.getConfidence() * 100));
         }
