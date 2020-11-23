@@ -60,6 +60,8 @@ public class CatDetectorActivity extends CameraActivity implements Analyzer
 
     private void objectsDetected(@NonNull ImageProxy imageProxy, @NonNull List<ImageLabel> objects)
     {
+        Bitmap bitmap = bitmap(imageProxy);
+
         List<ImageLabel> filtered = objects.stream()
                 .filter(this::isAnimal)
                 .collect(Collectors.toList());
@@ -68,8 +70,7 @@ public class CatDetectorActivity extends CameraActivity implements Analyzer
         {
             animalDetected();
 
-            Bitmap bitmap = bitmap(imageProxy);
-            DateTime dateTime = new DateTime(imageProxy.getImageInfo().getTimestamp());
+            DateTime dateTime = new DateTime();
             String timestamp = dateTime.toString("dd-MM-yyyy HH:mm:ss");
             String keys = keys(filtered);
             File file = new File(downloads, String.format("%s - %s.jpg", timestamp, keys));
@@ -96,13 +97,14 @@ public class CatDetectorActivity extends CameraActivity implements Analyzer
 
         for (ImageLabel imageLabel : imageLabels)
         {
-            if (builder.length() != 0){
+            if (builder.length() != 0)
+            {
                 builder.append("-");
             }
 
             builder.append(imageLabel.getText());
             builder.append("=");
-            builder.append((int)(imageLabel.getConfidence() * 100));
+            builder.append((int) (imageLabel.getConfidence() * 100));
         }
 
         return builder.toString();

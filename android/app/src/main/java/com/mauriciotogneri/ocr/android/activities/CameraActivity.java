@@ -11,6 +11,7 @@ import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.media.Image;
+import android.media.Image.Plane;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mlkit.vision.common.InputImage;
@@ -92,7 +93,16 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
     @SuppressLint("UnsafeExperimentalUsageError")
     public void analyze(@NonNull ImageProxy imageProxy)
     {
-        imageProxy.getImageInfo().getRotationDegrees();
+        /*Bitmap bitmap = bitmap(imageProxy.getImage(), imageProxy.getImageInfo().getRotationDegrees());
+        InputImage i = InputImage.fromBitmap(bitmap, imageProxy.getImageInfo().getRotationDegrees());
+        analyze(imageProxy, i);
+
+        File downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        DateTime dateTime = new DateTime();
+        String timestamp = dateTime.toString("dd-MM-yyyy HH:mm:ss");
+        File file = new File(downloads, String.format("%s - %s.jpg", timestamp, ""));
+        saveFile(bitmap, file);*/
+
         Image mediaImage = imageProxy.getImage();
 
         if (mediaImage != null)
@@ -129,6 +139,37 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
 
         Matrix matrix = new Matrix();
         matrix.postRotate(imageProxy.getImageInfo().getRotationDegrees());
+
+        //bitmap.recycle();
+
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+    }
+
+    protected Bitmap bitmap(@NonNull Image image, int rotation)
+    {
+        Plane[] planes = image.getPlanes();
+        ByteBuffer yBuffer = planes[0].getBuffer();
+        ByteBuffer uBuffer = planes[1].getBuffer();
+        ByteBuffer vBuffer = planes[2].getBuffer();
+
+        int ySize = yBuffer.remaining();
+        int uSize = uBuffer.remaining();
+        int vSize = vBuffer.remaining();
+
+        byte[] nv21 = new byte[ySize + uSize + vSize];
+        yBuffer.get(nv21, 0, ySize);
+        vBuffer.get(nv21, ySize, vSize);
+        uBuffer.get(nv21, ySize + vSize, uSize);
+
+        YuvImage yuvImage = new YuvImage(nv21, ImageFormat.NV21, image.getWidth(), image.getHeight(), null);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        yuvImage.compressToJpeg(new Rect(0, 0, yuvImage.getWidth(), yuvImage.getHeight()), 100, out);
+
+        byte[] imageBytes = out.toByteArray();
+        Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+
+        Matrix matrix = new Matrix();
+        matrix.postRotate(rotation);
 
         //bitmap.recycle();
 
