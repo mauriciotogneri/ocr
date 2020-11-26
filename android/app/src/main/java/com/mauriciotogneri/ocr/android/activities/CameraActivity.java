@@ -2,6 +2,7 @@ package com.mauriciotogneri.ocr.android.activities;
 
 import android.Manifest.permission;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
@@ -11,6 +12,10 @@ import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.media.Image;
+import android.media.MediaPlayer;
+import android.os.Build;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mlkit.vision.common.InputImage;
@@ -185,6 +190,20 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
         }
     }
 
+    protected void vibrate()
+    {
+        Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+        {
+            vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+        }
+        else
+        {
+            vibrator.vibrate(500);
+        }
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
     {
@@ -200,6 +219,12 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
     {
         return (ContextCompat.checkSelfPermission(this, permission.CAMERA) == PackageManager.PERMISSION_GRANTED) &&
                 (ContextCompat.checkSelfPermission(this, permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
+    }
+
+    protected void playSound()
+    {
+        MediaPlayer mediaPlayer = MediaPlayer.create(this, R.raw.meow);
+        mediaPlayer.start();
     }
 
     @Override

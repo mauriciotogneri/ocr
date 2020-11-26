@@ -1,12 +1,8 @@
 package com.mauriciotogneri.ocr.android.activities;
 
-import android.content.Context;
 import android.graphics.Bitmap;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.VibrationEffect;
-import android.os.Vibrator;
 import android.widget.TextView;
 
 import com.google.mlkit.vision.common.InputImage;
@@ -55,7 +51,7 @@ public class FrameChangeDetectorActivity extends CameraActivity implements Analy
             lastValue = value;
             save(bitmap);
             vibrate();
-            runOnUiThread(() -> textView.setText(String.valueOf(value)));
+            runOnUiThread(() -> textView.append(value + "\n"));
         }
 
         imageProxy.close();
@@ -82,19 +78,5 @@ public class FrameChangeDetectorActivity extends CameraActivity implements Analy
         DateTime dateTime = new DateTime(System.currentTimeMillis());
         File file = new File(downloads, String.format("%s.jpg", dateTime.toString("dd-MM-yyyy HH-mm-ss")));
         saveFile(bitmap, file);
-    }
-
-    private void vibrate()
-    {
-        Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-        {
-            vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
-        }
-        else
-        {
-            vibrator.vibrate(500);
-        }
     }
 }

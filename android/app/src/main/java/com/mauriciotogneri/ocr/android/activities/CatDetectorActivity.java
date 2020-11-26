@@ -1,6 +1,5 @@
 package com.mauriciotogneri.ocr.android.activities;
 
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Environment;
 
@@ -69,7 +68,7 @@ public class CatDetectorActivity extends CameraActivity implements Analyzer
 
         if (!filtered.isEmpty())
         {
-            animalDetected();
+            playSound();
 
             DateTime dateTime = new DateTime();
             String timestamp = dateTime.toString("dd-MM-yyyy HH:mm:ss:SSS");
@@ -108,11 +107,5 @@ public class CatDetectorActivity extends CameraActivity implements Analyzer
         }
 
         return builder.toString();
-    }
-
-    private void animalDetected()
-    {
-        MediaPlayer mediaPlayer = MediaPlayer.create(this, R.raw.meow);
-        mediaPlayer.start();
     }
 }
