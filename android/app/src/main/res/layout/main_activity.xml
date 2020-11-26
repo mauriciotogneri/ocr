@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/white"
@@ -7,17 +8,48 @@
     android:gravity="center"
     android:orientation="vertical">
 
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/confidence"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:importantForAutofill="no"
+        android:inputType="numberDecimal"
+        android:text="0.9"
+        android:textColor="@android:color/black"
+        tools:ignore="LabelFor" />
+
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/button.catDetector"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
         android:text="Cat detector" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/button.translator"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="30dp"
         android:text="Translator" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/threshold"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:gravity="end"
+        android:importantForAutofill="no"
+        android:inputType="numberDecimal"
+        android:text="2"
+        android:textColor="@android:color/black"
+        tools:ignore="LabelFor" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/button.frameChange"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:text="Frame change " />
 
 </LinearLayout>

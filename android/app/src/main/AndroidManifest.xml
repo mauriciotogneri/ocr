@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.mauriciotogneri.ocr.android">
 
+    <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -15,7 +16,9 @@
         android:label="@string/app.name"
         android:theme="@style/app.theme">
 
-        <activity android:name=".activities.MainActivity">
+        <activity
+            android:name=".activities.MainActivity"
+            android:keepScreenOn="true">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -24,9 +27,17 @@
 
         </activity>
 
-        <activity android:name=".activities.CatDetectorActivity" />
+        <activity
+            android:name=".activities.CatDetectorActivity"
+            android:keepScreenOn="true" />
 
-        <activity android:name=".activities.TextTranslatorActivity" />
+        <activity
+            android:name=".activities.TextTranslatorActivity"
+            android:keepScreenOn="true" />
+
+        <activity
+            android:name=".activities.FrameChangeDetectorActivity"
+            android:keepScreenOn="true" />
 
         <meta-data
             android:name="com.google.mlkit.vision.DEPENDENCIES"

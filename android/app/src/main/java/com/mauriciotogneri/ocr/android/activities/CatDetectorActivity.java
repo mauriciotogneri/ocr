@@ -29,6 +29,8 @@ public class CatDetectorActivity extends CameraActivity implements Analyzer
     private GraphicOverlay overlay;
     private File downloads;
 
+    public static final String PARAMETER_CONFIDENCE = "confidence";
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -39,8 +41,10 @@ public class CatDetectorActivity extends CameraActivity implements Analyzer
 
         downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
 
+        float confidence = getIntent().getFloatExtra(PARAMETER_CONFIDENCE, 0.5f);
+
         ImageLabelerOptions options = new ImageLabelerOptions.Builder()
-                .setConfidenceThreshold(0.5f)
+                .setConfidenceThreshold(confidence)
                 .build();
 
         imageLabeler = ImageLabeling.getClient(options);
