@@ -1,16 +1,16 @@
 package com.mauriciotogneri.ocr.android.activities;
 
+import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
 import android.os.Bundle;
-import android.os.Environment;
+import android.util.Log;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.mlkit.vision.common.InputImage;
 import com.mauriciotogneri.ocr.Image;
 import com.mauriciotogneri.ocr.android.R;
-import com.mauriciotogneri.ocr.android.graphic.Pixel;
 
 import org.joda.time.DateTime;
 
@@ -22,13 +22,14 @@ public class MotionDetectorActivity extends CameraActivity implements Analyzer
 {
     private TextView textView;
     private ImageView diffView;
+    private Button buttonPreview;
     private float threshold;
     private float lastValue = 0;
     private long lastFrame = 0;
     private Image lastImage = null;
 
     public static final String PARAMETER_THRESHOLD = "threshold";
-    private static final int ANALYSIS_FREQUENCY = 3 * 1000;
+    private static final int ANALYSIS_FREQUENCY = 1000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -36,9 +37,11 @@ public class MotionDetectorActivity extends CameraActivity implements Analyzer
         super.onCreate(savedInstanceState);
         setContentView(R.layout.motion_detector_activity);
 
-        downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         textView = findViewById(R.id.result);
         diffView = findViewById(R.id.diff);
+        buttonPreview = findViewById(R.id.button_preview);
+
+        buttonPreview.setOnClickListener(v -> togglePreview());
 
         threshold = getIntent().getFloatExtra(PARAMETER_THRESHOLD, 0.5f);
 
@@ -46,10 +49,12 @@ public class MotionDetectorActivity extends CameraActivity implements Analyzer
     }
 
     @Override
-    public void analyze(@NonNull ImageProxy imageProxy, @NonNull InputImage inputImage)
+    @SuppressLint("UnsafeExperimentalUsageError")
+    public void analyze(@NonNull ImageProxy imageProxy)
     {
         long now = System.currentTimeMillis();
         long diff = now - lastFrame;
+
         Bitmap bitmap = bitmap(imageProxy);
 
         /*if (diff > ANALYSIS_FREQUENCY)
@@ -71,8 +76,11 @@ public class MotionDetectorActivity extends CameraActivity implements Analyzer
 
         if (lastImage != null)
         {
-            Image diffImage = image.diff(lastImage, 0.1f);
-            runOnUiThread(() -> diffView.setImageBitmap(imageToBitmap(diffImage)));
+            long start1 = System.currentTimeMillis();
+            Image diffImage = image.diff(lastImage, 100f);
+            long end1 = System.currentTimeMillis();
+            Log.d("IMAGE_DEBUG", (end1 - start1) + "ms");
+            //runOnUiThread(() -> diffView.setImageBitmap(imageToBitmap(diffImage)));
         }
 
         lastImage = image;
@@ -80,36 +88,9 @@ public class MotionDetectorActivity extends CameraActivity implements Analyzer
         imageProxy.close();
     }
 
-    private Image bitmapToImage(Bitmap bitmap)
+    @Override
+    public void analyze(@NonNull ImageProxy imageProxy, @NonNull InputImage inputImage)
     {
-        int[] pixels = new int[bitmap.getWidth() * bitmap.getHeight()];
-        bitmap.getPixels(pixels, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
-
-        return new Image(bitmap.getWidth(), bitmap.getHeight(), pixels);
-    }
-
-    private Bitmap imageToBitmap(Image image)
-    {
-        Bitmap bitmap = Bitmap.createBitmap(image.width, image.height, Config.ARGB_8888);
-        bitmap.setPixels(image.pixels, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
-
-        return bitmap;
-    }
-
-    private float bitmapValue(@NonNull Bitmap bitmap)
-    {
-        int[] pixels = new int[bitmap.getWidth() * bitmap.getHeight()];
-        bitmap.getPixels(pixels, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
-
-        int sum = 0;
-
-        for (int currentPixel : pixels)
-        {
-            Pixel pixel = new Pixel(currentPixel);
-            sum += pixel.average();
-        }
-
-        return sum / (float) (bitmap.getWidth() * bitmap.getHeight());
     }
 
     private void saveImage()

@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
+import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
@@ -18,6 +19,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.view.View;
 import android.view.WindowManager;
 
 import com.google.common.util.concurrent.ListenableFuture;
@@ -55,6 +57,8 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
     private ImageCapture imageCapture;
     protected File downloads;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private PreviewView previewView;
+    private boolean previewEnabled = true;
 
     private static final int REQUEST_PERMISSIONS = 10;
 
@@ -66,6 +70,42 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+    }
+
+    private PreviewView previewView()
+    {
+        if (previewView == null)
+        {
+            previewView = findViewById(R.id.preview);
+        }
+
+        return previewView;
+    }
+
+    protected void enablePreview()
+    {
+        previewEnabled = true;
+        previewView().setVisibility(View.GONE);
+        startCamera();
+    }
+
+    protected void disablePreview()
+    {
+        previewEnabled = false;
+        previewView().setVisibility(View.VISIBLE);
+        startCamera();
+    }
+
+    protected void togglePreview()
+    {
+        if (previewEnabled)
+        {
+            disablePreview();
+        }
+        else
+        {
+            enablePreview();
+        }
     }
 
     protected void checkCamera()
@@ -91,11 +131,10 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
                 Preview preview = new Preview.Builder()
                         .setTargetAspectRatio(AspectRatio.RATIO_16_9)
                         .build();
-                PreviewView previewView = findViewById(R.id.preview);
-                preview.setSurfaceProvider(previewView.getSurfaceProvider());
+                preview.setSurfaceProvider(previewView().getSurfaceProvider());
 
                 imageCapture = new ImageCapture.Builder()
-                        .setTargetRotation(previewView.getDisplay().getRotation())
+                        .setTargetRotation(previewView().getDisplay().getRotation())
                         .build();
 
                 ImageAnalysis imageAnalyzer = new ImageAnalysis.Builder()
@@ -105,11 +144,22 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
                 imageAnalyzer.setAnalyzer(executor, this);
 
                 cameraProvider.unbindAll();
-                cameraProvider.bindToLifecycle(this,
-                                               CameraSelector.DEFAULT_BACK_CAMERA,
-                                               preview,
-                                               imageCapture,
-                                               imageAnalyzer);
+
+                if (previewEnabled)
+                {
+                    cameraProvider.bindToLifecycle(this,
+                                                   CameraSelector.DEFAULT_BACK_CAMERA,
+                                                   preview,
+                                                   imageCapture,
+                                                   imageAnalyzer);
+                }
+                else
+                {
+                    cameraProvider.bindToLifecycle(this,
+                                                   CameraSelector.DEFAULT_BACK_CAMERA,
+                                                   imageCapture,
+                                                   imageAnalyzer);
+                }
             }
             catch (Exception e)
             {
@@ -122,14 +172,6 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
     @SuppressLint("UnsafeExperimentalUsageError")
     public void analyze(@NonNull ImageProxy imageProxy)
     {
-        /*Bitmap bitmap = bitmap(imageProxy);
-        File downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        DateTime dateTime = new DateTime();
-        String timestamp = dateTime.toString("dd-MM-yyyy HH:mm:ss");
-        File file = new File(downloads, String.format("%s - %s.jpg", timestamp, ""));
-        saveFile(bitmap, file);
-        imageProxy.close();*/
-
         Image mediaImage = imageProxy.getImage();
 
         if (mediaImage != null)
@@ -137,9 +179,29 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
             InputImage image = InputImage.fromMediaImage(mediaImage, imageProxy.getImageInfo().getRotationDegrees());
             analyze(imageProxy, image);
         }
+        else
+        {
+            imageProxy.close();
+        }
     }
 
     public abstract void analyze(@NonNull ImageProxy imageProxy, @NonNull InputImage image);
+
+    protected com.mauriciotogneri.ocr.Image bitmapToImage(@NonNull Bitmap bitmap)
+    {
+        int[] pixels = new int[bitmap.getWidth() * bitmap.getHeight()];
+        bitmap.getPixels(pixels, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
+
+        return new com.mauriciotogneri.ocr.Image(bitmap.getWidth(), bitmap.getHeight(), pixels);
+    }
+
+    protected Bitmap imageToBitmap(@NonNull com.mauriciotogneri.ocr.Image image)
+    {
+        Bitmap bitmap = Bitmap.createBitmap(image.width, image.height, Config.ARGB_8888);
+        bitmap.setPixels(image.pixels, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
+
+        return bitmap;
+    }
 
     protected Bitmap bitmap(@NonNull ImageProxy imageProxy)
     {
@@ -167,8 +229,6 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
         Matrix matrix = new Matrix();
         matrix.postRotate(imageProxy.getImageInfo().getRotationDegrees());
 
-        //bitmap.recycle();
-
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
     }
 
@@ -182,13 +242,19 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
             @Override
             public void onImageSaved(@NonNull OutputFileResults outputFileResults)
             {
-                System.out.println();
+                /*try
+                {
+                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), outputFileResults.getSavedUri());
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }*/
             }
 
             @Override
             public void onError(@NonNull ImageCaptureException exception)
             {
-                System.out.println();
             }
         });
     }
