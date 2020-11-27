@@ -31,6 +31,10 @@ public class MotionDetectorActivity extends CameraActivity implements Analyzer
     public static final String PARAMETER_THRESHOLD = "threshold";
     public static final String PARAMETER_LIMIT = "limit";
 
+    private static final int STATUS_PREVIEW = 0;
+    private static final int STATUS_DIFF = 1;
+    private static final int STATUS_NONE = 2;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -44,19 +48,19 @@ public class MotionDetectorActivity extends CameraActivity implements Analyzer
         buttonPreview.setOnClickListener(v -> {
             status = (status + 1) % 3;
 
-            if (status == 0)
+            if (status == STATUS_PREVIEW)
             {
                 enablePreview();
                 diffView.setVisibility(View.GONE);
                 textView.setVisibility(View.GONE);
             }
-            else if (status == 1)
+            else if (status == STATUS_DIFF)
             {
                 disablePreview();
                 diffView.setVisibility(View.VISIBLE);
                 textView.setVisibility(View.VISIBLE);
             }
-            else if (status == 2)
+            else if (status == STATUS_NONE)
             {
                 disablePreview();
                 diffView.setVisibility(View.GONE);
@@ -74,7 +78,7 @@ public class MotionDetectorActivity extends CameraActivity implements Analyzer
     @SuppressLint("UnsafeExperimentalUsageError")
     public void analyze(@NonNull ImageProxy imageProxy)
     {
-        if ((status == 1) && (status == 2))
+        if ((status == STATUS_DIFF) && (status == STATUS_NONE))
         {
             Bitmap bitmap = bitmap(imageProxy);
             Image image = bitmapToImage(bitmap);
