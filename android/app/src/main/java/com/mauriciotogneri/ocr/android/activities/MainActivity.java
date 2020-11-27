@@ -34,10 +34,14 @@ public class MainActivity extends AppCompatActivity
 
         findViewById(R.id.button_motionDetector).setOnClickListener(v -> {
             EditText thresholdField = findViewById(R.id.threshold);
-            float threshold = Float.parseFloat(thresholdField.getText().toString());
+            int threshold = Integer.parseInt(thresholdField.getText().toString());
+
+            EditText limitField = findViewById(R.id.limit);
+            int limit = Integer.parseInt(limitField.getText().toString());
 
             Intent intent = new Intent(this, MotionDetectorActivity.class);
             intent.putExtra(MotionDetectorActivity.PARAMETER_THRESHOLD, threshold);
+            intent.putExtra(MotionDetectorActivity.PARAMETER_LIMIT, limit);
             startActivity(intent);
             finish();
         });

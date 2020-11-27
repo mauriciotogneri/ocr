@@ -23,10 +23,13 @@ public class MotionDetectorActivity extends CameraActivity implements Analyzer
 {
     private TextView textView;
     private ImageView diffView;
-    private float threshold;
+    private int threshold;
+    private int limit;
+    private int status = 0;
     private Image lastImage = null;
 
     public static final String PARAMETER_THRESHOLD = "threshold";
+    public static final String PARAMETER_LIMIT = "limit";
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -39,68 +42,86 @@ public class MotionDetectorActivity extends CameraActivity implements Analyzer
 
         Button buttonPreview = findViewById(R.id.button_preview);
         buttonPreview.setOnClickListener(v -> {
-            if (togglePreview())
+            status = (status + 1) % 3;
+
+            if (status == 0)
             {
-                buttonPreview.setText("OFF");
+                enablePreview();
                 diffView.setVisibility(View.GONE);
+                textView.setVisibility(View.GONE);
             }
-            else
+            else if (status == 1)
             {
-                buttonPreview.setText("ON");
+                disablePreview();
                 diffView.setVisibility(View.VISIBLE);
+                textView.setVisibility(View.VISIBLE);
+            }
+            else if (status == 2)
+            {
+                disablePreview();
+                diffView.setVisibility(View.GONE);
+                textView.setVisibility(View.GONE);
             }
         });
 
-        threshold = getIntent().getFloatExtra(PARAMETER_THRESHOLD, 0f);
+        threshold = getIntent().getIntExtra(PARAMETER_THRESHOLD, 0);
+        limit = getIntent().getIntExtra(PARAMETER_LIMIT, 0);
 
         checkCamera();
-        diffView.setVisibility(View.GONE);
     }
 
     @Override
     @SuppressLint("UnsafeExperimentalUsageError")
     public void analyze(@NonNull ImageProxy imageProxy)
     {
-        Bitmap bitmap = bitmap(imageProxy);
-        Image image = bitmapToImage(bitmap);
-
-        if (lastImage != null)
+        if ((status == 1) && (status == 2))
         {
-            int[] diffPixels = new int[image.width * image.height];
-            int whitePixels = 0;
+            Bitmap bitmap = bitmap(imageProxy);
+            Image image = bitmapToImage(bitmap);
 
-            for (int x = 0; x < image.width; ++x)
+            if (lastImage != null)
             {
-                for (int y = 0; y < image.height; ++y)
-                {
-                    Pixel pixelA = image.pixel(x, y);
-                    Pixel pixelB = lastImage.pixel(x, y);
-                    double diff = pixelA.diff(pixelB);
-                    int offset = x + y * image.width;
+                int[] diffPixels = new int[image.width * image.height];
+                int whitePixels = 0;
 
-                    if (diff >= (double) threshold)
+                for (int x = 0; x < image.width; ++x)
+                {
+                    for (int y = 0; y < image.height; ++y)
                     {
-                        diffPixels[offset] = Pixel.WHITE.value;
-                        whitePixels++;
-                    }
-                    else
-                    {
-                        diffPixels[offset] = Pixel.BLACK.value;
+                        Pixel pixelA = image.pixel(x, y);
+                        Pixel pixelB = lastImage.pixel(x, y);
+                        double diff = pixelA.diff(pixelB);
+                        int offset = x + y * image.width;
+
+                        if (diff >= (double) threshold)
+                        {
+                            diffPixels[offset] = Pixel.WHITE.value;
+                            whitePixels++;
+                        }
+                        else
+                        {
+                            diffPixels[offset] = Pixel.BLACK.value;
+                        }
                     }
                 }
+
+                Image diffImage = new Image(image.width, image.height, diffPixels);
+
+                if (whitePixels > limit)
+                {
+                    // TODO
+                }
+
+                final int label = whitePixels;
+
+                runOnUiThread(() -> {
+                    diffView.setImageBitmap(imageToBitmap(diffImage));
+                    textView.setText(String.valueOf(label));
+                });
             }
 
-            Image diffImage = new Image(image.width, image.height, diffPixels);
-
-            final int label = whitePixels;
-
-            runOnUiThread(() -> {
-                diffView.setImageBitmap(imageToBitmap(diffImage));
-                textView.setText(String.valueOf(label));
-            });
+            lastImage = image;
         }
-
-        lastImage = image;
 
         imageProxy.close();
     }
