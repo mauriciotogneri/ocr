@@ -83,7 +83,8 @@ public class MotionDetectorActivity extends CameraActivity implements Analyzer
     {
         if ((status == STATUS_DIFF) || (status == STATUS_NONE))
         {
-            takePhoto(bitmap -> processBitmap(bitmap, imageProxy));
+            Bitmap bitmap = bitmap(imageProxy);
+            processBitmap(bitmap, imageProxy);
         }
         else
         {

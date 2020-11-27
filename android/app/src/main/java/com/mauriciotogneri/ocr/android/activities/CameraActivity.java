@@ -205,7 +205,7 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
         return bitmap;
     }
 
-    protected Bitmap bitmap(@NonNull ImageProxy imageProxy)
+    protected Bitmap bitmapOriginal(@NonNull ImageProxy imageProxy)
     {
         PlaneProxy[] planes = imageProxy.getPlanes();
         ByteBuffer yBuffer = planes[0].getBuffer();
@@ -220,6 +220,73 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
         yBuffer.get(nv21, 0, ySize);
         vBuffer.get(nv21, ySize, vSize);
         uBuffer.get(nv21, ySize + vSize, uSize);
+
+        YuvImage yuvImage = new YuvImage(nv21, ImageFormat.NV21, imageProxy.getWidth(), imageProxy.getHeight(), null);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        yuvImage.compressToJpeg(new Rect(0, 0, yuvImage.getWidth(), yuvImage.getHeight()), 100, out);
+
+        byte[] imageBytes = out.toByteArray();
+        Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+
+        Matrix matrix = new Matrix();
+        matrix.postRotate(imageProxy.getImageInfo().getRotationDegrees());
+
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+    }
+
+    protected Bitmap bitmap(@NonNull ImageProxy imageProxy)
+    {
+        PlaneProxy[] planes = imageProxy.getPlanes();
+        ImageProxy.PlaneProxy yPlane = planes[0];
+        ImageProxy.PlaneProxy uPlane = planes[1];
+        ImageProxy.PlaneProxy vPlane = planes[2];
+
+        ByteBuffer yBuffer = yPlane.getBuffer();
+        ByteBuffer uBuffer = uPlane.getBuffer();
+        ByteBuffer vBuffer = vPlane.getBuffer();
+        yBuffer.rewind();
+        uBuffer.rewind();
+        vBuffer.rewind();
+
+        int ySize = yBuffer.remaining();
+
+        int position = 0;
+        // TODO(b/115743986): Pull these bytes from a pool instead of allocating for every image.
+        byte[] nv21 = new byte[ySize + (imageProxy.getWidth() * imageProxy.getHeight() / 2)];
+
+        // Add the full y buffer to the array. If rowStride > 1, some padding may be skipped.
+        for (int row = 0; row < imageProxy.getHeight(); row++)
+        {
+            yBuffer.get(nv21, position, imageProxy.getWidth());
+            position += imageProxy.getWidth();
+            yBuffer.position(Math.min(ySize, yBuffer.position() - imageProxy.getWidth() + yPlane.getRowStride()));
+        }
+
+        int chromaHeight = imageProxy.getHeight() / 2;
+        int chromaWidth = imageProxy.getWidth() / 2;
+        int vRowStride = vPlane.getRowStride();
+        int uRowStride = uPlane.getRowStride();
+        int vPixelStride = vPlane.getPixelStride();
+        int uPixelStride = uPlane.getPixelStride();
+
+        // Interleave the u and v frames, filling up the rest of the buffer. Use two line buffers to
+        // perform faster bulk gets from the byte buffers.
+        byte[] vLineBuffer = new byte[vRowStride];
+        byte[] uLineBuffer = new byte[uRowStride];
+        for (int row = 0; row < chromaHeight; row++)
+        {
+            vBuffer.get(vLineBuffer, 0, Math.min(vRowStride, vBuffer.remaining()));
+            uBuffer.get(uLineBuffer, 0, Math.min(uRowStride, uBuffer.remaining()));
+            int vLineBufferPosition = 0;
+            int uLineBufferPosition = 0;
+            for (int col = 0; col < chromaWidth; col++)
+            {
+                nv21[position++] = vLineBuffer[vLineBufferPosition];
+                nv21[position++] = uLineBuffer[uLineBufferPosition];
+                vLineBufferPosition += vPixelStride;
+                uLineBufferPosition += uPixelStride;
+            }
+        }
 
         YuvImage yuvImage = new YuvImage(nv21, ImageFormat.NV21, imageProxy.getWidth(), imageProxy.getHeight(), null);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
