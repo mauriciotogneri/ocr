@@ -30,14 +30,15 @@ public class Image
                 Pixel pixelA = pixel(x, y);
                 Pixel pixelB = image.pixel(x, y);
                 double diff = pixelA.diff(pixelB);
+                int offset = x + (y * width);
 
                 if (diff >= threshold)
                 {
-                    diffPixels[x + (y * width)] = new Pixel(255, 255, 255, 255).value;
+                    diffPixels[offset] = Pixel.WHITE.value;
                 }
                 else
                 {
-                    diffPixels[x + (y * width)] = new Pixel(255, 0, 0, 0).value;
+                    diffPixels[offset] = Pixel.BLACK.value;
                 }
             }
         }

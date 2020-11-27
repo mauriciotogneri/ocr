@@ -8,6 +8,9 @@ public class Pixel
     public final int green;
     public final int blue;
 
+    public static final Pixel WHITE = new Pixel(255, 255, 255, 255);
+    public static final Pixel BLACK = new Pixel(255, 0, 0, 0);
+
     public Pixel(int value)
     {
         this.value = value;
@@ -36,12 +39,12 @@ public class Pixel
 
     public boolean isWhite()
     {
-        return (red == 255) && (green == 255) && (blue == 255);
+        return (red == WHITE.red) && (green == WHITE.green) && (blue == WHITE.blue);
     }
 
     public boolean isBlack()
     {
-        return (red == 0) && (green == 0) && (blue == 0);
+        return (red == BLACK.red) && (green == BLACK.green) && (blue == BLACK.blue);
     }
 
     public Pixel grayScale()
