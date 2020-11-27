@@ -53,18 +53,21 @@ public class MotionDetectorActivity extends CameraActivity implements Analyzer
                 enablePreview();
                 diffView.setVisibility(View.GONE);
                 textView.setVisibility(View.GONE);
+                buttonPreview.setText("PREVIEW");
             }
             else if (status == STATUS_DIFF)
             {
                 disablePreview();
                 diffView.setVisibility(View.VISIBLE);
                 textView.setVisibility(View.VISIBLE);
+                buttonPreview.setText("DIFF");
             }
             else if (status == STATUS_NONE)
             {
                 disablePreview();
                 diffView.setVisibility(View.GONE);
                 textView.setVisibility(View.GONE);
+                buttonPreview.setText("NONE");
             }
         });
 
@@ -78,7 +81,7 @@ public class MotionDetectorActivity extends CameraActivity implements Analyzer
     @SuppressLint("UnsafeExperimentalUsageError")
     public void analyze(@NonNull ImageProxy imageProxy)
     {
-        if ((status == STATUS_DIFF) && (status == STATUS_NONE))
+        if ((status == STATUS_DIFF) || (status == STATUS_NONE))
         {
             Bitmap bitmap = bitmap(imageProxy);
             Image image = bitmapToImage(bitmap);
@@ -113,7 +116,7 @@ public class MotionDetectorActivity extends CameraActivity implements Analyzer
 
                 if (whitePixels > limit)
                 {
-                    // TODO
+                    saveImage();
                 }
 
                 final int label = whitePixels;
