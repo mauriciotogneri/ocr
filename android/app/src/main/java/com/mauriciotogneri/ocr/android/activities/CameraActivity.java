@@ -85,18 +85,18 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
     protected void enablePreview()
     {
         previewEnabled = true;
-        previewView().setVisibility(View.GONE);
+        previewView().setVisibility(View.VISIBLE);
         startCamera();
     }
 
     protected void disablePreview()
     {
         previewEnabled = false;
-        previewView().setVisibility(View.VISIBLE);
+        previewView().setVisibility(View.GONE);
         startCamera();
     }
 
-    protected void togglePreview()
+    protected boolean togglePreview()
     {
         if (previewEnabled)
         {
@@ -106,6 +106,8 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
         {
             enablePreview();
         }
+
+        return previewEnabled;
     }
 
     protected void checkCamera()

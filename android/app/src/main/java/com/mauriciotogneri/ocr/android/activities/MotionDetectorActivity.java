@@ -3,7 +3,6 @@ package com.mauriciotogneri.ocr.android.activities;
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -22,7 +21,6 @@ public class MotionDetectorActivity extends CameraActivity implements Analyzer
 {
     private TextView textView;
     private ImageView diffView;
-    private Button buttonPreview;
     private float threshold;
     private float lastValue = 0;
     private long lastFrame = 0;
@@ -39,9 +37,18 @@ public class MotionDetectorActivity extends CameraActivity implements Analyzer
 
         textView = findViewById(R.id.result);
         diffView = findViewById(R.id.diff);
-        buttonPreview = findViewById(R.id.button_preview);
 
-        buttonPreview.setOnClickListener(v -> togglePreview());
+        Button buttonPreview = findViewById(R.id.button_preview);
+        buttonPreview.setOnClickListener(v -> {
+            if (togglePreview())
+            {
+                buttonPreview.setText("OFF");
+            }
+            else
+            {
+                buttonPreview.setText("ON");
+            }
+        });
 
         threshold = getIntent().getFloatExtra(PARAMETER_THRESHOLD, 0.5f);
 
@@ -55,35 +62,24 @@ public class MotionDetectorActivity extends CameraActivity implements Analyzer
         long now = System.currentTimeMillis();
         long diff = now - lastFrame;
 
-        Bitmap bitmap = bitmap(imageProxy);
-
-        /*if (diff > ANALYSIS_FREQUENCY)
+        if (diff > ANALYSIS_FREQUENCY)
         {
             lastFrame = now;
 
-            float value = bitmapValue(bitmap);
+            Bitmap bitmap = bitmap(imageProxy);
+            Image image = bitmapToImage(bitmap);
 
-            if (Math.abs(value - lastValue) > threshold)
+            if (lastImage != null)
             {
-                lastValue = value;
-                saveImage();
-                vibrate();
-                runOnUiThread(() -> textView.append(value + "\n"));
+                //long start1 = System.currentTimeMillis();
+                Image diffImage = image.diff(lastImage, 100f);
+                //long end1 = System.currentTimeMillis();
+                //Log.d("IMAGE_DEBUG", (end1 - start1) + "ms");
+                runOnUiThread(() -> diffView.setImageBitmap(imageToBitmap(diffImage)));
             }
-        }*/
 
-        Image image = bitmapToImage(bitmap);
-
-        if (lastImage != null)
-        {
-            long start1 = System.currentTimeMillis();
-            Image diffImage = image.diff(lastImage, 100f);
-            long end1 = System.currentTimeMillis();
-            Log.d("IMAGE_DEBUG", (end1 - start1) + "ms");
-            //runOnUiThread(() -> diffView.setImageBitmap(imageToBitmap(diffImage)));
+            lastImage = image;
         }
-
-        lastImage = image;
 
         imageProxy.close();
     }
