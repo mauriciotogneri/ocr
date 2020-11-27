@@ -24,11 +24,9 @@ public class MotionDetectorActivity extends CameraActivity implements Analyzer
     private TextView textView;
     private ImageView diffView;
     private float threshold;
-    private long lastFrame = 0;
     private Image lastImage = null;
 
     public static final String PARAMETER_THRESHOLD = "threshold";
-    private static final int ANALYSIS_FREQUENCY = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -63,58 +61,46 @@ public class MotionDetectorActivity extends CameraActivity implements Analyzer
     @SuppressLint("UnsafeExperimentalUsageError")
     public void analyze(@NonNull ImageProxy imageProxy)
     {
-        long now = System.currentTimeMillis();
-        long timeDiff = now - lastFrame;
+        Bitmap bitmap = bitmap(imageProxy);
+        Image image = bitmapToImage(bitmap);
 
-        if (timeDiff > ANALYSIS_FREQUENCY)
+        if (lastImage != null)
         {
-            lastFrame = now;
+            int[] diffPixels = new int[image.width * image.height];
+            int whitePixels = 0;
 
-            Bitmap bitmap = bitmap(imageProxy);
-            Image image = bitmapToImage(bitmap);
-
-            if (lastImage != null)
+            for (int x = 0; x < image.width; ++x)
             {
-                int[] diffPixels = new int[image.width * image.height];
-                int whitePixels = 0;
-
-                for (int x = 0; x < image.width; ++x)
+                for (int y = 0; y < image.height; ++y)
                 {
-                    for (int y = 0; y < image.height; ++y)
-                    {
-                        Pixel pixelA = image.pixel(x, y);
-                        Pixel pixelB = lastImage.pixel(x, y);
-                        double diff = pixelA.diff(pixelB);
-                        int offset = x + y * image.width;
+                    Pixel pixelA = image.pixel(x, y);
+                    Pixel pixelB = lastImage.pixel(x, y);
+                    double diff = pixelA.diff(pixelB);
+                    int offset = x + y * image.width;
 
-                        if (diff >= (double) threshold)
-                        {
-                            diffPixels[offset] = Pixel.WHITE.value;
-                            whitePixels++;
-                        }
-                        else
-                        {
-                            diffPixels[offset] = Pixel.BLACK.value;
-                        }
+                    if (diff >= (double) threshold)
+                    {
+                        diffPixels[offset] = Pixel.WHITE.value;
+                        whitePixels++;
+                    }
+                    else
+                    {
+                        diffPixels[offset] = Pixel.BLACK.value;
                     }
                 }
-
-                Image diffImage = new Image(image.width, image.height, diffPixels);
-
-                //long start1 = System.currentTimeMillis();
-                //long end1 = System.currentTimeMillis();
-                //Log.d("IMAGE_DEBUG", (end1 - start1) + "ms");
-
-                final int label = whitePixels;
-
-                runOnUiThread(() -> {
-                    diffView.setImageBitmap(imageToBitmap(diffImage));
-                    textView.setText(String.valueOf(label));
-                });
             }
 
-            lastImage = image;
+            Image diffImage = new Image(image.width, image.height, diffPixels);
+
+            final int label = whitePixels;
+
+            runOnUiThread(() -> {
+                diffView.setImageBitmap(imageToBitmap(diffImage));
+                textView.setText(String.valueOf(label));
+            });
         }
+
+        lastImage = image;
 
         imageProxy.close();
     }
