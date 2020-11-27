@@ -261,6 +261,48 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
         });
     }
 
+    protected void takePhoto(OnBitmapDone onDone)
+    {
+        try
+        {
+            File outputFile = new File(getCacheDir(), String.format("%s.jpg", System.currentTimeMillis()));
+            ImageCapture.OutputFileOptions outputFileOptions = new ImageCapture.OutputFileOptions.Builder(outputFile).build();
+
+            imageCapture.takePicture(outputFileOptions, ContextCompat.getMainExecutor(this), new OnImageSavedCallback()
+            {
+                @Override
+                public void onImageSaved(@NonNull OutputFileResults outputFileResults)
+                {
+                    try
+                    {
+                        Bitmap bitmap = BitmapFactory.decodeFile(outputFile.getAbsolutePath());
+                        Bitmap scaled = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth() / 10, bitmap.getHeight() / 10, false);
+
+                        onDone.onDone(scaled);
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onError(@NonNull ImageCaptureException exception)
+                {
+                }
+            });
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public interface OnBitmapDone
+    {
+        void onDone(Bitmap bitmap);
+    }
+
     protected void saveFile(Bitmap bitmap, File file)
     {
         try

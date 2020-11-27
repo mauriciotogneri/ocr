@@ -83,53 +83,61 @@ public class MotionDetectorActivity extends CameraActivity implements Analyzer
     {
         if ((status == STATUS_DIFF) || (status == STATUS_NONE))
         {
-            Bitmap bitmap = bitmap(imageProxy);
-            Image image = bitmapToImage(bitmap);
+            takePhoto(bitmap -> processBitmap(bitmap, imageProxy));
+        }
+        else
+        {
+            imageProxy.close();
+        }
+    }
 
-            if (lastImage != null)
+    private void processBitmap(Bitmap bitmap, ImageProxy imageProxy)
+    {
+        //Bitmap bitmap = bitmap(imageProxy);
+        Image image = bitmapToImage(bitmap);
+
+        if (lastImage != null)
+        {
+            int[] diffPixels = new int[image.width * image.height];
+            int whitePixels = 0;
+
+            for (int x = 0; x < image.width; ++x)
             {
-                int[] diffPixels = new int[image.width * image.height];
-                int whitePixels = 0;
-
-                for (int x = 0; x < image.width; ++x)
+                for (int y = 0; y < image.height; ++y)
                 {
-                    for (int y = 0; y < image.height; ++y)
-                    {
-                        Pixel pixelA = image.pixel(x, y);
-                        Pixel pixelB = lastImage.pixel(x, y);
-                        double diff = pixelA.diff(pixelB);
-                        int offset = x + y * image.width;
+                    Pixel pixelA = image.pixel(x, y);
+                    Pixel pixelB = lastImage.pixel(x, y);
+                    double diff = pixelA.diff(pixelB);
+                    int offset = x + y * image.width;
 
-                        if (diff >= (double) threshold)
-                        {
-                            diffPixels[offset] = Pixel.WHITE.value;
-                            whitePixels++;
-                        }
-                        else
-                        {
-                            diffPixels[offset] = Pixel.BLACK.value;
-                        }
+                    if (diff >= (double) threshold)
+                    {
+                        diffPixels[offset] = Pixel.WHITE.value;
+                        whitePixels++;
+                    }
+                    else
+                    {
+                        diffPixels[offset] = Pixel.BLACK.value;
                     }
                 }
-
-                Image diffImage = new Image(image.width, image.height, diffPixels);
-
-                if (whitePixels > limit)
-                {
-                    saveImage();
-                }
-
-                final int label = whitePixels;
-
-                runOnUiThread(() -> {
-                    diffView.setImageBitmap(imageToBitmap(diffImage));
-                    textView.setText(String.valueOf(label));
-                });
             }
 
-            lastImage = image;
+            Image diffImage = new Image(image.width, image.height, diffPixels);
+
+            if (whitePixels > limit)
+            {
+                saveImage();
+            }
+
+            final int label = whitePixels;
+
+            runOnUiThread(() -> {
+                diffView.setImageBitmap(imageToBitmap(diffImage));
+                textView.setText(String.valueOf(label));
+            });
         }
 
+        lastImage = image;
         imageProxy.close();
     }
 
