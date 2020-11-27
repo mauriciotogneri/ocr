@@ -234,6 +234,7 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
     }
 
+    // ImageUtil.imageToJpegByteArray(imageProxy)
     protected Bitmap bitmap(@NonNull ImageProxy imageProxy)
     {
         PlaneProxy[] planes = imageProxy.getPlanes();

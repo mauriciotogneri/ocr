@@ -94,7 +94,6 @@ public class MotionDetectorActivity extends CameraActivity implements Analyzer
 
     private void processBitmap(Bitmap bitmap, ImageProxy imageProxy)
     {
-        //Bitmap bitmap = bitmap(imageProxy);
         Image image = bitmapToImage(bitmap);
 
         if (lastImage != null)
