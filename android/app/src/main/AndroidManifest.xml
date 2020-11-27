@@ -36,7 +36,7 @@
             android:keepScreenOn="true" />
 
         <activity
-            android:name=".activities.FrameChangeDetectorActivity"
+            android:name=".activities.MotionDetectorActivity"
             android:keepScreenOn="true" />
 
         <meta-data

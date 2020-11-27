@@ -22,6 +22,13 @@ public class Pixel
         this((alpha << 24) | (red << 16) | (green << 8) | blue);
     }
 
+    public double diff(Pixel pixel)
+    {
+        double d = Math.pow((pixel.red - red), 2) + Math.pow((pixel.red - red), 2) + Math.pow((pixel.red - red), 2);
+
+        return Math.sqrt(d);
+    }
+
     public int average()
     {
         return (red + green + blue) / 3;

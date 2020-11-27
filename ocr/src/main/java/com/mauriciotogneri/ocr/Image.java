@@ -19,6 +19,32 @@ public class Image
         this.pixels = pixels;
     }
 
+    public Image diff(Image image, float threshold)
+    {
+        int[] diffPixels = new int[width * height];
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                Pixel pixelA = pixel(x, y);
+                Pixel pixelB = image.pixel(x, y);
+                double diff = pixelA.diff(pixelB);
+
+                if (diff >= threshold)
+                {
+                    diffPixels[x + (y * width)] = new Pixel(255, 255, 255, 255).value;
+                }
+                else
+                {
+                    diffPixels[x + (y * width)] = new Pixel(255, 0, 0, 0).value;
+                }
+            }
+        }
+
+        return new Image(width, height, diffPixels);
+    }
+
     public Pixel pixel(int x, int y)
     {
         return new Pixel(pixels[x + (y * width)]);

@@ -32,12 +32,12 @@ public class MainActivity extends AppCompatActivity
             finish();
         });
 
-        findViewById(R.id.button_frameChange).setOnClickListener(v -> {
+        findViewById(R.id.button_motionDetector).setOnClickListener(v -> {
             EditText thresholdField = findViewById(R.id.threshold);
             float threshold = Float.parseFloat(thresholdField.getText().toString());
 
-            Intent intent = new Intent(this, FrameChangeDetectorActivity.class);
-            intent.putExtra(FrameChangeDetectorActivity.PARAMETER_THRESHOLD, threshold);
+            Intent intent = new Intent(this, MotionDetectorActivity.class);
+            intent.putExtra(MotionDetectorActivity.PARAMETER_THRESHOLD, threshold);
             startActivity(intent);
             finish();
         });
