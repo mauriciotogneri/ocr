@@ -3,6 +3,7 @@ package com.mauriciotogneri.ocr.android.activities;
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -22,12 +23,11 @@ public class MotionDetectorActivity extends CameraActivity implements Analyzer
     private TextView textView;
     private ImageView diffView;
     private float threshold;
-    private float lastValue = 0;
     private long lastFrame = 0;
     private Image lastImage = null;
 
     public static final String PARAMETER_THRESHOLD = "threshold";
-    private static final int ANALYSIS_FREQUENCY = 1000;
+    private static final int ANALYSIS_FREQUENCY = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -43,16 +43,19 @@ public class MotionDetectorActivity extends CameraActivity implements Analyzer
             if (togglePreview())
             {
                 buttonPreview.setText("OFF");
+                diffView.setVisibility(View.GONE);
             }
             else
             {
                 buttonPreview.setText("ON");
+                diffView.setVisibility(View.VISIBLE);
             }
         });
 
-        threshold = getIntent().getFloatExtra(PARAMETER_THRESHOLD, 0.5f);
+        threshold = getIntent().getFloatExtra(PARAMETER_THRESHOLD, 0f);
 
         checkCamera();
+        diffView.setVisibility(View.GONE);
     }
 
     @Override
@@ -72,7 +75,7 @@ public class MotionDetectorActivity extends CameraActivity implements Analyzer
             if (lastImage != null)
             {
                 //long start1 = System.currentTimeMillis();
-                Image diffImage = image.diff(lastImage, 100f);
+                Image diffImage = image.diff(lastImage, threshold);
                 //long end1 = System.currentTimeMillis();
                 //Log.d("IMAGE_DEBUG", (end1 - start1) + "ms");
                 runOnUiThread(() -> diffView.setImageBitmap(imageToBitmap(diffImage)));

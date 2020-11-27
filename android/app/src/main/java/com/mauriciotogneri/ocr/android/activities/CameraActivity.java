@@ -86,14 +86,14 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
     {
         previewEnabled = true;
         previewView().setVisibility(View.VISIBLE);
-        startCamera();
+        checkCamera();
     }
 
     protected void disablePreview()
     {
         previewEnabled = false;
         previewView().setVisibility(View.GONE);
-        startCamera();
+        checkCamera();
     }
 
     protected boolean togglePreview()
@@ -122,7 +122,7 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
         }
     }
 
-    protected void startCamera()
+    private void startCamera()
     {
         ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(this);
         cameraProviderFuture.addListener(() -> {
@@ -293,9 +293,9 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
     {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        if ((requestCode == REQUEST_PERMISSIONS) && permissionsGranted())
+        if (requestCode == REQUEST_PERMISSIONS)
         {
-            startCamera();
+            checkCamera();
         }
     }
 
