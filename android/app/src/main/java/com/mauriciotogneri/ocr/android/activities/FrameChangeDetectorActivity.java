@@ -11,8 +11,6 @@ import com.mauriciotogneri.ocr.android.graphic.Pixel;
 
 import org.joda.time.DateTime;
 
-import java.io.File;
-
 import androidx.annotation.NonNull;
 import androidx.camera.core.ImageAnalysis.Analyzer;
 import androidx.camera.core.ImageProxy;
@@ -20,7 +18,6 @@ import androidx.camera.core.ImageProxy;
 public class FrameChangeDetectorActivity extends CameraActivity implements Analyzer
 {
     private TextView textView;
-    private File downloads;
     private float threshold;
     private float lastValue = 0;
 
@@ -49,7 +46,7 @@ public class FrameChangeDetectorActivity extends CameraActivity implements Analy
         if (Math.abs(value - lastValue) > threshold)
         {
             lastValue = value;
-            save(bitmap);
+            saveImage();
             vibrate();
             runOnUiThread(() -> textView.append(value + "\n"));
         }
@@ -73,10 +70,9 @@ public class FrameChangeDetectorActivity extends CameraActivity implements Analy
         return sum / (float) (bitmap.getWidth() * bitmap.getHeight());
     }
 
-    private void save(Bitmap bitmap)
+    private void saveImage()
     {
-        DateTime dateTime = new DateTime(System.currentTimeMillis());
-        File file = new File(downloads, String.format("%s.jpg", dateTime.toString("dd-MM-yyyy HH-mm-ss")));
-        saveFile(bitmap, file);
+        String fileName = String.format("%s.jpg", DateTime.now().toString("dd-MM-yyyy HH-mm-ss-SSS"));
+        takePhoto(fileName);
     }
 }

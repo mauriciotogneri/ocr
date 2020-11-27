@@ -14,8 +14,11 @@ import android.graphics.YuvImage;
 import android.media.Image;
 import android.media.MediaPlayer;
 import android.os.Build;
+import android.os.Bundle;
+import android.os.Environment;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.view.WindowManager;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mlkit.vision.common.InputImage;
@@ -29,6 +32,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.AspectRatio;
 import androidx.camera.core.CameraSelector;
@@ -49,9 +53,20 @@ import androidx.core.content.ContextCompat;
 public abstract class CameraActivity extends AppCompatActivity implements Analyzer
 {
     private ImageCapture imageCapture;
+    protected File downloads;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     private static final int REQUEST_PERMISSIONS = 10;
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+    }
 
     protected void checkCamera()
     {
@@ -157,8 +172,9 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
     }
 
-    protected void takePhoto(File file)
+    protected void takePhoto(String fileName)
     {
+        File file = new File(downloads, fileName);
         ImageCapture.OutputFileOptions outputFileOptions = new ImageCapture.OutputFileOptions.Builder(file).build();
 
         imageCapture.takePicture(outputFileOptions, ContextCompat.getMainExecutor(this), new OnImageSavedCallback()

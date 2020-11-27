@@ -1,7 +1,6 @@
 package com.mauriciotogneri.ocr.android.activities;
 
 import android.os.Bundle;
-import android.os.Environment;
 
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.label.ImageLabel;
@@ -14,7 +13,6 @@ import com.mauriciotogneri.ocr.android.graphic.LabelGraphic;
 
 import org.joda.time.DateTime;
 
-import java.io.File;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,7 +24,6 @@ public class CatDetectorActivity extends CameraActivity implements Analyzer
 {
     private ImageLabeler imageLabeler;
     private GraphicOverlay overlay;
-    private File downloads;
 
     public static final String PARAMETER_CONFIDENCE = "confidence";
 
@@ -37,8 +34,6 @@ public class CatDetectorActivity extends CameraActivity implements Analyzer
         setContentView(R.layout.cat_detector_activity);
 
         overlay = findViewById(R.id.overlay);
-
-        downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
 
         float confidence = getIntent().getFloatExtra(PARAMETER_CONFIDENCE, 0.5f);
 
@@ -69,12 +64,7 @@ public class CatDetectorActivity extends CameraActivity implements Analyzer
         if (!filtered.isEmpty())
         {
             playSound();
-
-            DateTime dateTime = new DateTime();
-            String timestamp = dateTime.toString("dd-MM-yyyy HH:mm:ss:SSS");
-            String keys = keys(filtered);
-            File file = new File(downloads, String.format("%s %s.jpg", timestamp, keys));
-            takePhoto(file);
+            saveImage(filtered);
         }
 
         overlay.clear();
@@ -107,5 +97,13 @@ public class CatDetectorActivity extends CameraActivity implements Analyzer
         }
 
         return builder.toString();
+    }
+
+    private void saveImage(List<ImageLabel> filtered)
+    {
+        String timestamp = DateTime.now().toString("dd-MM-yyyy HH-mm-ss-SSS");
+        String keys = keys(filtered);
+        String fileName = String.format("%s %s.jpg", timestamp, keys);
+        takePhoto(fileName);
     }
 }
