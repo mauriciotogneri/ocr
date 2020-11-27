@@ -20,8 +20,10 @@ public class FrameChangeDetectorActivity extends CameraActivity implements Analy
     private TextView textView;
     private float threshold;
     private float lastValue = 0;
+    private long lastFrame = 0;
 
     public static final String PARAMETER_THRESHOLD = "threshold";
+    private static final int ANALISYS_FREQUENCY = 3 * 1000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -40,15 +42,23 @@ public class FrameChangeDetectorActivity extends CameraActivity implements Analy
     @Override
     public void analyze(@NonNull ImageProxy imageProxy, @NonNull InputImage inputImage)
     {
-        Bitmap bitmap = bitmap(imageProxy);
-        float value = bitmapValue(bitmap);
+        long now = System.currentTimeMillis();
+        long diff = now - lastFrame;
 
-        if (Math.abs(value - lastValue) > threshold)
+        if (diff > ANALISYS_FREQUENCY)
         {
-            lastValue = value;
-            saveImage();
-            vibrate();
-            runOnUiThread(() -> textView.append(value + "\n"));
+            lastFrame = now;
+
+            Bitmap bitmap = bitmap(imageProxy);
+            float value = bitmapValue(bitmap);
+
+            if (Math.abs(value - lastValue) > threshold)
+            {
+                lastValue = value;
+                saveImage();
+                vibrate();
+                runOnUiThread(() -> textView.append(value + "\n"));
+            }
         }
 
         imageProxy.close();
