@@ -123,16 +123,17 @@ public class MotionDetectorActivity extends CameraActivity implements Analyzer
             }
 
             Image diffImage = new Image(image.width, image.height, diffPixels);
+            Bitmap diffBitmap = imageToBitmap(diffImage);
 
             if (whitePixels > limit)
             {
-                saveImage();
+                saveImage(diffBitmap, whitePixels);
             }
 
             final int label = whitePixels;
 
             runOnUiThread(() -> {
-                diffView.setImageBitmap(imageToBitmap(diffImage));
+                diffView.setImageBitmap(diffBitmap);
                 textView.setText(String.valueOf(label));
             });
         }
@@ -146,9 +147,9 @@ public class MotionDetectorActivity extends CameraActivity implements Analyzer
     {
     }
 
-    private void saveImage()
+    private void saveImage(Bitmap bitmap, int limit)
     {
-        String fileName = String.format("%s.jpg", DateTime.now().toString("dd-MM-yyyy HH-mm-ss-SSS"));
-        takePhoto(fileName);
+        String fileName = String.format("%s %s.jpg", DateTime.now().toString("dd-MM-yyyy HH-mm-ss-SSS"), limit);
+        saveFile(bitmap, fileName);
     }
 }

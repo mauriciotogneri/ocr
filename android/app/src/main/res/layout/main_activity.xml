@@ -65,7 +65,7 @@
             android:gravity="end"
             android:importantForAutofill="no"
             android:inputType="number"
-            android:text="150"
+            android:text="100"
             android:textColor="@android:color/black"
             tools:ignore="LabelFor" />
 
@@ -89,7 +89,7 @@
             android:gravity="end"
             android:importantForAutofill="no"
             android:inputType="number"
-            android:text="10000"
+            android:text="5000"
             android:textColor="@android:color/black"
             tools:ignore="LabelFor" />
 

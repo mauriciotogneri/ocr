@@ -371,11 +371,11 @@ public abstract class CameraActivity extends AppCompatActivity implements Analyz
         void onDone(Bitmap bitmap);
     }
 
-    protected void saveFile(Bitmap bitmap, File file)
+    protected void saveFile(Bitmap bitmap, String fileName)
     {
         try
         {
-            FileOutputStream outStream = new FileOutputStream(file);
+            FileOutputStream outStream = new FileOutputStream(new File(downloads, fileName));
             bitmap.compress(CompressFormat.JPEG, 100, outStream);
         }
         catch (Exception e)
