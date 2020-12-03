@@ -10,6 +10,12 @@ import com.mauriciotogneri.ocr.android.R;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+/*
+Save bitmap instead of photo
+Push notifications
+Record threshold in picture name
+Save latest threshold used
+ */
 public class MainActivity extends AppCompatActivity
 {
     private static final String FIELD_CONFIDENCE = "confidence";
