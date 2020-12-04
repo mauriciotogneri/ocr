@@ -127,7 +127,7 @@ public class MotionDetectorActivity extends CameraActivity implements Analyzer
 
             if (whitePixels > limit)
             {
-                saveImage(diffBitmap, whitePixels);
+                saveImage(bitmap, whitePixels);
             }
 
             final int label = whitePixels;
